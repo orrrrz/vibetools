@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>{{ page_title | default('网页小工具') }}</title>
+    <style>
+        /* Apply Inter font globally if loaded */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Ensure main content area takes available height */
+        .main-content {
+            min-height: calc(100vh - 8rem); /* Adjust based on header/footer height */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    {% block header_left %}
+                    <span class="text-xl font-semibold text-gray-700">{{ header_title | default('小工具') }}</span>
+                    {% endblock %}
+                </div>
+
+                <div class="hidden md:block">
+                    {% block header_right %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 main-content">
+        {% block content %}
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-semibold mb-4">{{ content_title | default('内容区域') }}</h2>
+            <div>
+                {{ main_content | safe | default('这里是放置小工具主要内容的地方。') }}
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+
+    <footer class="bg-gray-100 border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-gray-500 text-sm">
+            {% block footer %}
+            {{ footer_text | default('&copy; ' + "2025" + ' 版权所有。') }}
+            {% endblock %}
+        </div>
+    </footer>
+
+</body>
+</html>

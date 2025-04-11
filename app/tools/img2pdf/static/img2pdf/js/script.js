@@ -260,13 +260,24 @@ document.addEventListener('DOMContentLoaded', function() {
         hideElement(errorContainer);
     }
     
-    function showElement(el) {
-        el.classList.remove('d-none');
+// Helper functions (Corrected for Tailwind CSS)
+function showElement(el) {
+    // Check if the element exists before manipulating classList
+    if (el) {
+        el.classList.remove('hidden'); // Use 'hidden' instead of 'd-none'
+    } else {
+        console.error("Attempted to show a null element.");
     }
-    
-    function hideElement(el) {
-        el.classList.add('d-none');
+}
+
+function hideElement(el) {
+    // Check if the element exists before manipulating classList
+    if (el) {
+        el.classList.add('hidden');    // Use 'hidden' instead of 'd-none'
+    } else {
+        console.error("Attempted to hide a null element.");
     }
+}
     
     // Handle page unload to clean up
     window.addEventListener('beforeunload', cleanup);

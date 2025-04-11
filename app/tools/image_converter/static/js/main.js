@@ -1,44 +1,46 @@
+// Wait for the DOM to be fully loaded before running the script
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM elements
+    // --- DOM Element References ---
+    // Forms and Inputs
     const uploadForm = document.getElementById('upload-form');
     const imageUpload = document.getElementById('image-upload');
-    const imagePreview = document.getElementById('image-preview');
-    const uploadPrompt = document.getElementById('upload-prompt');
-    const imageInfo = document.getElementById('image-info');
-    const downloadBtn = document.getElementById('download-btn');
-    const resizeBtn = document.getElementById('resize-btn');
     const resizeWidth = document.getElementById('resize-width');
     const resizeHeight = document.getElementById('resize-height');
+    const formatSelect = document.getElementById('format-select');
+
+    // Buttons
+    const downloadBtn = document.getElementById('download-btn');
+    const resizeBtn = document.getElementById('resize-btn');
     const rotateLeft = document.getElementById('rotate-left');
     const rotateRight = document.getElementById('rotate-right');
     const flipHorizontal = document.getElementById('flip-horizontal');
     const flipVertical = document.getElementById('flip-vertical');
     const grayscaleBtn = document.getElementById('grayscale-btn');
-    const formatSelect = document.getElementById('format-select');
     const convertFormatBtn = document.getElementById('convert-format-btn');
-    
-    // Get loading modal DOM element
-    const loadingModalElement = document.getElementById('loadingModal');
-    // Create a direct reference to the Bootstrap modal object
-    let loadingModal = null;
-    
-    const errorModalElement = document.getElementById('errorModal');
-    let errorModal = null;
-    
-    const errorMessage = document.getElementById('error-message');
 
-    // State
-    let currentImage = null;
-    
-    // Initialize the application
+    // Display Areas
+    const imagePreview = document.getElementById('image-preview');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const imageInfo = document.getElementById('image-info');
+
+    // Modals and Error Message Elements
+    const loadingModalElement = document.getElementById('loadingModal'); // Reference to the loading modal container
+    const errorModalElement = document.getElementById('errorModal');     // Reference to the error modal container
+    const errorMessage = document.getElementById('error-message');       // Span inside the error modal to show the message
+    // Note: Modal close buttons in the HTML use onclick. For better practice, add IDs and attach listeners here.
+
+    // --- State Variable ---
+    let currentImage = null; // Stores data about the currently loaded/edited image
+
+    // --- Initialization ---
     init();
-    
+
+    /**
+     * Initializes the application by setting up event listeners
+     * and disabling operation buttons initially.
+     */
     function init() {
-        // Initialize Bootstrap modals
-        loadingModal = new bootstrap.Modal(loadingModalElement);
-        errorModal = new bootstrap.Modal(errorModalElement);
-        
-        // Set up event listeners
+        // Set up event listeners for user interactions
         uploadForm.addEventListener('submit', handleUpload);
         downloadBtn.addEventListener('click', handleDownload);
         resizeBtn.addEventListener('click', handleResize);
@@ -48,201 +50,269 @@ document.addEventListener('DOMContentLoaded', () => {
         flipVertical.addEventListener('click', () => handleFlip('vertical'));
         grayscaleBtn.addEventListener('click', handleGrayscale);
         convertFormatBtn.addEventListener('click', handleFormatConversion);
-        
-        // Disable operation buttons initially
+
+        // Disable operation buttons until an image is loaded
         toggleOperationButtons(false);
+
+        // Add listeners for modal close buttons (if they had IDs)
+        // Example: document.getElementById('errorModalCloseBtn')?.addEventListener('click', hideError);
+        // Since the HTML uses onclick, this step is skipped for now.
     }
-    
-    // Function to show loading modal
+
+    // --- Modal Handling Functions (Tailwind CSS based) ---
+
+    /**
+     * Shows the loading modal by removing the 'hidden' class.
+     */
     function showLoading() {
-        // Make sure any existing modal is hidden first
-        hideLoading();
-        // Then show the modal
-        loadingModal.show();
-        
-        // Safety timeout to ensure modal closes after 10 seconds
-        setTimeout(() => {
-            hideLoading();
-        }, 10000);
-    }
-    
-    // Function to hide loading modal
-    function hideLoading() {
-        try {
-            // Try the Bootstrap way
-            loadingModal.hide();
-            
-            // Also try manual DOM manipulation
-            loadingModalElement.classList.remove('show');
-            loadingModalElement.setAttribute('aria-hidden', 'true');
-            loadingModalElement.setAttribute('style', 'display: none;');
-            
-            // Remove backdrop
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(backdrop => {
-                backdrop.parentNode.removeChild(backdrop);
-            });
-            
-            // Remove modal open class from body
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('overflow');
-            document.body.style.removeProperty('padding-right');
-        } catch (error) {
-            console.error('Error hiding modal:', error);
+        if (loadingModalElement) {
+            loadingModalElement.classList.remove('hidden');
         }
     }
-    
-    // Enable or disable operation buttons
+
+    /**
+     * Hides the loading modal by adding the 'hidden' class.
+     */
+    function hideLoading() {
+        if (loadingModalElement) {
+            loadingModalElement.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Shows the error modal with a specific message.
+     * @param {string} message - The error message to display.
+     */
+    function showError(message) {
+        if (errorMessage && errorModalElement) {
+            errorMessage.textContent = message; // Set the error text
+            errorModalElement.classList.remove('hidden'); // Show the modal
+        } else {
+            console.error("Error modal elements not found. Message:", message);
+            alert("发生错误: " + message); // Fallback alert
+        }
+    }
+
+    /**
+     * Hides the error modal.
+     * Can be called when starting a new operation or explicitly by a close button.
+     */
+    function hideError() {
+        if (errorModalElement) {
+            errorModalElement.classList.add('hidden');
+        }
+    }
+
+
+    // --- UI Update Functions ---
+
+    /**
+     * Enables or disables all image operation buttons and inputs.
+     * @param {boolean} enabled - True to enable, false to disable.
+     */
     function toggleOperationButtons(enabled) {
         const buttons = [
             downloadBtn, resizeBtn, rotateLeft, rotateRight,
             flipHorizontal, flipVertical, grayscaleBtn, convertFormatBtn
         ];
-        
+        const inputs = [resizeWidth, resizeHeight, formatSelect];
+
         buttons.forEach(btn => {
-            btn.disabled = !enabled;
+            if (btn) btn.disabled = !enabled;
         });
-        
-        [resizeWidth, resizeHeight, formatSelect].forEach(input => {
-            input.disabled = !enabled;
+
+        inputs.forEach(input => {
+            if (input) input.disabled = !enabled;
         });
     }
-    
-    // Handle image upload
+
+    /**
+     * Displays the image in the preview area and hides the initial prompt.
+     * Uses Tailwind's 'hidden' class.
+     * @param {string} url - The URL of the image to display.
+     */
+    function showImage(url) {
+        if (imagePreview && uploadPrompt) {
+            imagePreview.src = url;
+            imagePreview.classList.remove('hidden'); // Show the image element
+            uploadPrompt.classList.add('hidden');    // Hide the prompt element
+        }
+    }
+
+    /**
+     * Updates the image information section with details.
+     * Generates an HTML table with Tailwind CSS classes.
+     * @param {object} data - The image data object from the backend.
+     */
+    function updateImageInfo(data) {
+        if (!imageInfo || !data) return;
+
+        // Basic Tailwind table styling
+        let infoHtml = '<table class="w-full text-left text-sm">';
+        infoHtml += '<tbody class="divide-y divide-gray-200">'; // Add lines between rows
+        infoHtml += `<tr class="hover:bg-gray-50"><td class="py-1 pr-2 font-medium text-gray-600">名称:</td><td class="py-1 text-gray-800 break-all">${data.originalName || data.filename}</td></tr>`;
+        infoHtml += `<tr class="hover:bg-gray-50"><td class="py-1 pr-2 font-medium text-gray-600">尺寸:</td><td class="py-1 text-gray-800">${data.width} × ${data.height}</td></tr>`;
+        infoHtml += `<tr class="hover:bg-gray-50"><td class="py-1 pr-2 font-medium text-gray-600">格式:</td><td class="py-1 text-gray-800">${(data.format || '').toUpperCase()}</td></tr>`;
+        infoHtml += '</tbody></table>';
+
+        imageInfo.innerHTML = infoHtml;
+    }
+
+
+    // --- Event Handlers ---
+
+    /**
+     * Handles the form submission for image upload.
+     * Sends the image file to the backend API.
+     * @param {Event} e - The form submission event.
+     */
     async function handleUpload(e) {
-        e.preventDefault();
-        
-        const file = imageUpload.files[0];
-        if (!file) {
-            showError('Please select an image to upload');
+        e.preventDefault(); // Prevent default form submission
+
+        if (!imageUpload || !imageUpload.files || imageUpload.files.length === 0) {
+            showError('请选择要上传的图片');
             return;
         }
-        
-        // Show loading modal
-        showLoading();
-        
-        // Create FormData and append file
+        const file = imageUpload.files[0];
+
+        hideError(); // Hide any previous errors
+        showLoading(); // Show loading indicator
+
         const formData = new FormData();
-        formData.append('image', file);
-        
+        formData.append('image', file); // 'image' should match backend expectation
+
         try {
-            console.log('Sending upload request to /tools/image_converter/api/upload');
             const response = await fetch('/tools/image_converter/api/upload', {
                 method: 'POST',
                 body: formData
             });
-            
-            console.log('Response status:', response.status);
-            
+
+            // Check if the response status indicates success
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                 // Try to parse error message from backend if available
+                 let errorMsg = `HTTP 错误! 状态: ${response.status}`;
+                 try {
+                     const errorData = await response.json();
+                     errorMsg = errorData.error || errorMsg;
+                 } catch (parseError) {
+                     // Ignore if response is not JSON
+                 }
+                 throw new Error(errorMsg);
             }
-            
+
             const data = await response.json();
-            console.log('Response data:', data);
-            
+
             if (data.success) {
-                // Update current image data
-                currentImage = data;
-                
-                // Update UI
-                showImage(data.url);
-                updateImageInfo(data);
-                toggleOperationButtons(true);
+                currentImage = data; // Store image data
+                showImage(data.url); // Display the uploaded image
+                updateImageInfo(data); // Show image details
+                toggleOperationButtons(true); // Enable editing buttons
             } else {
-                showError(data.error || 'Failed to upload image');
+                showError(data.error || '上传图片失败');
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
-            showError('An error occurred while uploading the image: ' + error.message);
+            console.error('上传图片时出错:', error);
+            showError('上传图片时发生错误: ' + error.message);
+            toggleOperationButtons(false); // Disable buttons on error
         } finally {
-            console.log('Upload completed, hiding loading modal');
-            hideLoading();
+            hideLoading(); // Hide loading indicator regardless of outcome
         }
     }
-    
-    // Show image in the preview
-    function showImage(url) {
-        imagePreview.src = url;
-        imagePreview.classList.remove('d-none');
-        uploadPrompt.classList.add('d-none');
-    }
-    
-    // Update image information
-    function updateImageInfo(data) {
-        let infoHtml = '<table class="table table-sm">';
-        infoHtml += `<tr><td>Name:</td><td>${data.originalName || data.filename}</td></tr>`;
-        infoHtml += `<tr><td>Dimensions:</td><td>${data.width} × ${data.height}</td></tr>`;
-        infoHtml += `<tr><td>Format:</td><td>${data.format.toUpperCase()}</td></tr>`;
-        infoHtml += '</table>';
-        
-        imageInfo.innerHTML = infoHtml;
-    }
-    
-    // Handle image resizing
-    async function handleResize() {
-        if (!currentImage) return;
-        
-        const width = parseInt(resizeWidth.value);
-        const height = parseInt(resizeHeight.value);
-        
-        if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
-            showError('Please enter valid width and height values');
+
+    /**
+     * Handles the click event for the download button.
+     * Triggers a download of the current image URL.
+     */
+    function handleDownload() {
+        if (!currentImage || !currentImage.url) {
+            showError("没有可供下载的图片。");
             return;
         }
-        
-        await applyImageOperation([{
-            type: 'resize',
-            width,
-            height
-        }]);
+
+        // Create a temporary link element to trigger the download
+        const link = document.createElement('a');
+        link.href = currentImage.url;
+        // Suggest a filename for the download
+        link.download = `edited_${currentImage.originalName || 'image.' + currentImage.format}`;
+        document.body.appendChild(link); // Append to body (required for Firefox)
+        link.click(); // Simulate a click
+        document.body.removeChild(link); // Clean up the link
     }
-    
-    // Handle image rotation
+
+    /**
+     * Handles the click event for the resize button.
+     * Validates input and calls applyImageOperation.
+     */
+    async function handleResize() {
+        if (!currentImage) return;
+        hideError();
+
+        const width = parseInt(resizeWidth.value);
+        const height = parseInt(resizeHeight.value);
+
+        if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+            showError('请输入有效的宽度和高度值');
+            return;
+        }
+
+        await applyImageOperation([{ type: 'resize', width, height }]);
+    }
+
+    /**
+     * Handles the click event for rotate buttons.
+     * @param {number} angle - The angle to rotate (-90 or 90).
+     */
     async function handleRotate(angle) {
         if (!currentImage) return;
-        
-        await applyImageOperation([{
-            type: 'rotate',
-            angle
-        }]);
+        hideError();
+        await applyImageOperation([{ type: 'rotate', angle }]);
     }
-    
-    // Handle image flipping
+
+    /**
+     * Handles the click event for flip buttons.
+     * @param {string} direction - 'horizontal' or 'vertical'.
+     */
     async function handleFlip(direction) {
         if (!currentImage) return;
-        
-        await applyImageOperation([{
-            type: 'flip',
-            direction
-        }]);
+        hideError();
+        await applyImageOperation([{ type: 'flip', direction }]);
     }
-    
-    // Handle grayscale conversion
+
+    /**
+     * Handles the click event for the grayscale button.
+     */
     async function handleGrayscale() {
         if (!currentImage) return;
-        
-        await applyImageOperation([{
-            type: 'grayscale'
-        }]);
+        hideError();
+        await applyImageOperation([{ type: 'grayscale' }]);
     }
-    
-    // Handle format conversion
+
+    /**
+     * Handles the click event for the format conversion button.
+     */
     async function handleFormatConversion() {
         if (!currentImage) return;
-        
+        hideError();
         const format = formatSelect.value;
-        
-        await applyImageOperation([], format);
+        await applyImageOperation([], format); // Send empty operations array, just specify format
     }
-    
-    // Apply image operation
+
+
+    // --- Backend Interaction ---
+
+    /**
+     * Sends image editing operations to the backend API.
+     * @param {Array<object>} operations - An array of operation objects.
+     * @param {string|null} format - The target format (optional, defaults to current format).
+     */
     async function applyImageOperation(operations, format = null) {
-        if (!currentImage) return;
-        
-        // Show loading modal
-        showLoading();
-        
+        if (!currentImage || !currentImage.filename) {
+             showError("无法应用操作：缺少图片信息。");
+             return;
+        }
+
+        showLoading(); // Show loading indicator
+
         try {
             const response = await fetch('/tools/image_converter/api/edit', {
                 method: 'POST',
@@ -250,48 +320,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    filename: currentImage.filename,
-                    operations,
-                    format: format || currentImage.format
+                    filename: currentImage.filename, // Send current filename to identify image
+                    operations: operations,
+                    format: format || currentImage.format // Target format
                 })
             });
-            
+
+             if (!response.ok) {
+                 let errorMsg = `HTTP 错误! 状态: ${response.status}`;
+                 try {
+                     const errorData = await response.json();
+                     errorMsg = errorData.error || errorMsg;
+                 } catch (parseError) { /* Ignore */ }
+                 throw new Error(errorMsg);
+            }
+
             const data = await response.json();
-            
+
             if (data.success) {
-                // Update current image data
-                currentImage = data;
-                
-                // Update UI with a cache-busting URL to force reload
+                currentImage = data; // Update state with new image data
+                // Add cache-busting query parameter to force image reload
                 showImage(data.url + '?t=' + new Date().getTime());
-                updateImageInfo(data);
+                updateImageInfo(data); // Update displayed info
             } else {
-                showError(data.error || 'Failed to process image');
+                showError(data.error || '处理图片失败');
             }
         } catch (error) {
-            console.error('Error processing image:', error);
-            showError('An error occurred while processing the image');
+            console.error('处理图片时出错:', error);
+            showError('处理图片时发生错误: ' + error.message);
         } finally {
-            hideLoading();
+            hideLoading(); // Hide loading indicator
         }
     }
-    
-    // Handle image download
-    function handleDownload() {
-        if (!currentImage) return;
-        
-        // Create a temporary anchor and trigger download
-        const link = document.createElement('a');
-        link.href = currentImage.url;
-        link.download = `edited_${currentImage.originalName || 'image.' + currentImage.format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-    
-    // Show error message
-    function showError(message) {
-        errorMessage.textContent = message;
-        errorModal.show();
-    }
-}); 
+
+}); // End of DOMContentLoaded listener

@@ -137,9 +137,9 @@ def extract_pages():
                 # Adjust for 0-based indexing
                 pdf_writer.add_page(pdf_reader.pages[page_num - 1])
         
-            # Write the output PDF
-            with open(output_path, 'wb') as output_file:
-                pdf_writer.write(output_file)
+        # 将写入操作移到外面，使用单独的 with 语句
+        with open(output_path, 'wb') as output_file:
+            pdf_writer.write(output_file)
         
         # Store output path in session
         session['output_path'] = output_path
@@ -195,4 +195,4 @@ def cleanup():
         except Exception as e:
             logger.error(f"Error cleaning up session {session_id}: {str(e)}")
     
-    return jsonify({'success': True}) 
+    return jsonify({'success': True})

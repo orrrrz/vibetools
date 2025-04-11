@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Notepad - VibeTools{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('tools.notepad.static', filename='css/notepad.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="notepad-container">
+    <h1>Online Notepad</h1>
+    <div class="toolbar">
+        <button id="save">Save</button>
+        <button id="clear">Clear</button>
+    </div>
+    <textarea id="notepad" placeholder="Start typing..."></textarea>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('tools.notepad.static', filename='js/notepad.js') }}"></script>
+{% endblock %}
