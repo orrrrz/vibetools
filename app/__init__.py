@@ -33,6 +33,9 @@ def create_app(config_name):
     from .tools.mindmap import mindmap_bp
     app.register_blueprint(mindmap_bp, url_prefix='/tools/mindmap')
 
+    from .tools.img2pdf import img2pdf_bp
+    app.register_blueprint(img2pdf_bp, url_prefix='/tools/img2pdf')
+
     # 注册其他工具蓝图...
 
     # 注册全局错误处理 (可选，也可以在蓝图内定义)

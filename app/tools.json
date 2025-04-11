@@ -1,17 +1,5 @@
 [
     {
-        "id": "simple-calculator",
-        "name": "Simple Calculator", 
-        "url": "/tools/simple-calculator",
-        "description": "A simple calculator that can perform basic arithmetic operations."
-    },
-    {
-        "id": "color-picker",
-        "name": "Color Picker", 
-        "url": "/tools/color-picker",
-        "description": "A tool that allows you to pick a color and see the hexadecimal value."
-    },
-    {
         "id": "image-converter",
         "name": "图片快速编辑", 
         "url": "/tools/image_converter",
@@ -22,5 +10,11 @@
         "name": "思维导图", 
         "url": "/tools/mindmap",
         "description": "在线思维导图"
+    },
+    {
+        "id": "img2pdf",
+        "name": "图片转PDF", 
+        "url": "/tools/img2pdf",
+        "description": "图片转PDF"
     }
 ]
