@@ -7,4 +7,4 @@ app = create_app(config_name)
 
 if __name__ == '__main__':
     # host='0.0.0.0' 允许外部访问
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8080)
