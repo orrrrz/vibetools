@@ -1,0 +1,195 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    flex-shrink: 0;
+}
+
+.container-fluid {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.row {
+    width: 100%;
+    height: calc(100vh - 56px);
+    margin: 0;
+    overflow: hidden;
+}
+
+#editor-container, #preview-container {
+    height: 100%;
+    padding: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.editor-header, .preview-header {
+    height: 40px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f8f9fa;
+    padding: 0 10px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+}
+
+.preview-header {
+    display: none;
+}
+
+#doc-title {
+    flex: 1;
+    height: 40px;
+    border: none;
+    padding: 0 15px;
+    background-color: transparent;
+}
+
+#editor {
+    width: 100%;
+    height: calc(100% - 40px);
+    border: none;
+    resize: none;
+    padding: 15px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-y: scroll;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+#preview {
+    height: 100%;
+    padding: 15px;
+    overflow-y: auto;
+    border-left: 1px solid #ddd;
+    background-color: #f9f9f9;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+.toc {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.toc ul {
+    margin-bottom: 0;
+}
+
+pre {
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+code {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+.saving {
+    color: #ffc107;
+}
+
+.saved {
+    color: #28a745;
+}
+
+/* Theme styles */
+.theme-dark #preview {
+    background-color: #282c34;
+    color: #abb2bf;
+}
+
+.theme-dark .preview-header {
+    background-color: #21252b;
+    border-color: #181a1f;
+}
+
+.theme-dark pre {
+    background-color: #21252b;
+}
+
+.theme-solarized #preview {
+    background-color: #fdf6e3;
+    color: #657b83;
+}
+
+.theme-nord #preview {
+    background-color: #2e3440;
+    color: #d8dee9;
+}
+
+.theme-nord pre {
+    background-color: #3b4252;
+}
+
+/* Immersive mode */
+.immersive-mode #preview-container {
+    display: none;
+}
+
+.immersive-mode #editor-container {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+}
+
+/* Folded editor */
+.folded .navbar-brand:nth-child(2),
+.folded .navbar .navbar-nav {
+    display: none;
+}
+
+.folded .navbar {
+    min-height: 30px;
+    height: 30px;
+}
+
+.folded .row {
+    height: calc(100vh - 30px);
+}
+
+.folded .navbar-brand {
+    font-size: 0.9rem;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.folded .container-fluid {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* Dropdown submenu styles */
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+    display: block;
+} 

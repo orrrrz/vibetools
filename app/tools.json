@@ -1,20 +1,26 @@
 [
     {
-        "id": "image-converter",
+        "module_name": "image_converter",
         "name": "图片快速编辑", 
         "url": "/tools/image_converter",
         "description": "快速转换图片格式、调整大小、添加水印等。"
     },
     {
-        "id": "mindmap",
+        "module_name": "mindmap",
         "name": "思维导图", 
         "url": "/tools/mindmap",
         "description": "在线思维导图"
     },
     {
-        "id": "img2pdf",
+        "module_name": "img2pdf",
         "name": "图片转PDF", 
         "url": "/tools/img2pdf",
         "description": "图片转PDF"
+    },
+    {
+        "module_name": "mdeditor",
+        "name": "Markdown 编辑器", 
+        "url": "/tools/mdeditor",
+        "description": "Markdown编辑器"
     }
 ]

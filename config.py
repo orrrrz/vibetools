@@ -4,7 +4,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'a_very_secret_string'
-    # 其他通用配置...
+    
+    PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+    
     @staticmethod
     def init_app(app):
         pass
