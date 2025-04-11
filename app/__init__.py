@@ -29,6 +29,10 @@ def create_app(config_name):
     from .tools.image_converter import image_converter_bp
     app.register_blueprint(image_converter_bp, url_prefix='/tools/image_converter')
 
+
+    from .tools.mindmap import mindmap_bp
+    app.register_blueprint(mindmap_bp, url_prefix='/tools/mindmap')
+
     # 注册其他工具蓝图...
 
     # 注册全局错误处理 (可选，也可以在蓝图内定义)
