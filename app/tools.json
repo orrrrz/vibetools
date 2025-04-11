@@ -18,6 +18,12 @@
         "description": "图片转PDF"
     },
     {
+        "module_name": "pdfpick",
+        "name": "PDF页面提取", 
+        "url": "/tools/pdfpick",
+        "description": "提取PDF中的指定页面范围"
+    },
+    {
         "module_name": "mdeditor",
         "name": "Markdown 编辑器", 
         "url": "/tools/mdeditor",

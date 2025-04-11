@@ -1,0 +1,46 @@
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.drop-zone.dragover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd;
+}
+
+#pdfInput {
+    cursor: pointer;
+}
+
+#uploadProgress {
+    transition: width 0.3s;
+}
+
+/* Styling for page input fields */
+#pageRanges, #pageList {
+    font-family: monospace;
+}
+
+/* Style for better error visibility */
+.has-error {
+    border-color: #dc3545;
+}
+
+.has-error:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Make buttons more prominent */
+.btn-success, .btn-primary {
+    padding: 10px 20px;
+    font-weight: 500;
+} 
