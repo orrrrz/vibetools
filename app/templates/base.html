@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>{{ page_title | default('网页小工具') }}</title>
+    <title>{{ page_title | default('梁记氛围工具店') }}</title>
     <style>
         /* Apply Inter font globally if loaded */
         body {
@@ -24,11 +24,14 @@
     <header class="bg-white shadow-sm sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0">
+                <div class="flex-shrink-0 flex items-center">
                     {% block header_left %}
                     <a href="{{ url_for("main.index") }}" class="flex items-center">
-                        <span class="text-xl font-semibold text-gray-700">{{ header_title | default('Vibed') }}</span>
+                        <span class="text-xl font-semibold text-gray-700">{{ header_title | default('梁记氛围工具店') }}</span>
                     </a>
+                    {% endblock %}
+                    {% block subheader_left %}
+                    <span class="ml-2"> 首页 </span>
                     {% endblock %}
                 </div>
 

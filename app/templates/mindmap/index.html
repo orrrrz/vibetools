@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 
 {# Override header title #}
-{% block header_left %}
-<a href="/" class="text-xl font-semibold text-gray-700 hover:text-blue-600 mr-4">Vibe Tools</a>
-<span class="text-xl font-semibold text-gray-500">/ 思维导图 </span>
+{% block subheader_left %}
+<span class="text-xl font-semibold text-gray-500">/ 思维导图</span>
 {% endblock %}
 
 {# Add control buttons to the header right section #}
@@ -55,11 +54,4 @@
 <script src="https://cdn.jsdelivr.net/npm/leader-line-new@1.1.9/leader-line.min.js"></script>
 <script src="{{ url_for('mindmap.static', filename='js/script.js') }}"></script>
 
-{% endblock %}
-
-{# Optional: Override footer if needed #}
-{% block footer %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 text-center text-gray-500 text-sm">
-    &copy; 2025 思维导图编辑器 (Flask Version)
-</div>
 {% endblock %}

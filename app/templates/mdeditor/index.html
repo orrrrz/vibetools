@@ -2,7 +2,11 @@
 {% extends "base.html" %}
 
 {# Set the page title #}
-{% block page_title %}Markdown Online Editor{% endblock %}
+{% block page_title %} Markdown Online Editor{% endblock %}
+
+{% block subheader_left %}
+<span class="text-xl font-semibold text-gray-500">/ Markdown 编辑器</span>
+{% endblock %}
 
 {# Override the entire header block for the custom editor navbar #}
 {% block header %}

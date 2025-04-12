@@ -16,10 +16,14 @@
 <style>
     .tool-card {
         background: #ffffff; /* White card background */
-        transition: box-shadow 0.2s ease-in-out; /* Smooth shadow transition */
+        transition: all 0.3s ease; /* Smooth transition for all properties */
+        border: 1px solid #edf2f7; /* Light border */
+        transform: translateY(0); /* Initial position */
     }
     .tool-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Softer hover shadow */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Softer hover shadow */
+        transform: translateY(-4px); /* Slight upward movement */
+        border-color: #e2e8f0; /* Change border color on hover */
     }
     .hidden {
         display: none;
