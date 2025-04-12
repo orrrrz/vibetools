@@ -1,229 +1,279 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Tools</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f9fafb; /* Light gray background */
-        }
-        .tool-card {
-            background: #ffffff; /* White card background */
-            transition: box-shadow 0.2s ease-in-out; /* Smooth shadow transition */
-        }
-        .tool-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Softer hover shadow */
-        }
-        .hidden {
-            display: none;
-        }
-        /* Limit content width on larger screens */
-        .content-wrapper {
-            max-width: 1280px; /* Equivalent to max-w-7xl */
-            margin-left: auto;
-            margin-right: auto;
-        }
-        /* Responsive adjustments for search/sort */
-        @media (max-width: 640px) {
-            .search-sort-container {
-                flex-direction: column;
-                align-items: stretch; /* Stretch items to full width */
-                gap: 0.75rem; /* Reduced gap */
-            }
-            .sort-buttons {
-                /* justify-content: space-between; */ /* Removed for better stacking */
-                flex-wrap: wrap; /* Allow buttons to wrap */
-                gap: 0.5rem; /* Gap between buttons */
-            }
-            .sort-buttons button {
-                flex-grow: 1; /* Allow buttons to grow */
-                min-width: 80px; /* Minimum width for buttons */
-            }
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col">
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="content-wrapper px-4 sm:px-6 lg:px-8 py-3"> <div class="flex items-center justify-between">
-                <h1 class="text-xl font-medium text-gray-800">Vibe Tools</h1> </div>
-        </div>
-    </header>
+{# Inherit from the base template #}
+{% extends "base.html" %}
 
-    <main class="flex-grow content-wrapper px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex flex-col items-center justify-center mb-12 mt-8">
-            <div class="w-full max-w-2xl mb-6">
-                <div class="relative">
-                    <input
-                        type="text"
-                        id="search-input"
-                        placeholder="搜索工具..."
-                        class="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-300 rounded-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg shadow-sm transition-all duration-200" >
-                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <div class="sort-buttons flex items-center gap-3 mb-4">
-                <button id="sort-asc" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors shadow-sm">
-                    名称 A-Z
-                </button>
-                <button id="sort-desc" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors shadow-sm">
-                    名称 Z-A
-                </button>
-                <button id="sort-reset" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors shadow-sm">
-                    重置
-                </button>
-            </div>
-        </div>
+{# Set the page title #}
+{% block page_title %}Vibe Tools - 工具列表{% endblock %}
 
-        <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"> {% if tools %}
-                {% for tool in tools %}
-                <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="{{ tool.name }}"
-                     data-description="{{ tool.description }}">
-                    <div class="p-4 flex-grow"> <h2 class="text-base font-medium text-gray-900 mb-1">{{ tool.name }}</h2> <p class="text-sm text-gray-600 line-clamp-2">{{ tool.description }}</p> </div>
-                    <div class="px-4 pb-4 pt-2"> <a href="{{ tool.url }}" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                            打开工具
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                 <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="示例工具 A" data-description="这是一个示例工具的描述，用于展示卡片样式。">
-                    <div class="p-4 flex-grow">
-                        <h2 class="text-base font-medium text-gray-900 mb-1">示例工具 A</h2>
-                        <p class="text-sm text-gray-600 line-clamp-2">这是一个示例工具的描述，用于展示卡片样式。</p>
-                    </div>
-                    <div class="px-4 pb-4 pt-2">
-                        <a href="#" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                            打开工具
-                        </a>
-                    </div>
-                </div>
-                 <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="示例工具 B" data-description="这是另一个工具的描述，看看它如何适应。">
-                    <div class="p-4 flex-grow">
-                        <h2 class="text-base font-medium text-gray-900 mb-1">示例工具 B</h2>
-                        <p class="text-sm text-gray-600 line-clamp-2">这是另一个工具的描述，看看它如何适应。</p>
-                    </div>
-                    <div class="px-4 pb-4 pt-2">
-                        <a href="#" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                            打开工具
-                        </a>
-                    </div>
-                </div>
-                 <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="长名称工具 C" data-description="这个工具的描述特别长，是为了测试文本换行和截断效果而设计的，看看在两行之后是否会正确显示省略号。">
-                     <div class="p-4 flex-grow">
-                         <h2 class="text-base font-medium text-gray-900 mb-1">长名称工具 C</h2>
-                         <p class="text-sm text-gray-600 line-clamp-2">这个工具的描述特别长，是为了测试文本换行和截断效果而设计的，看看在两行之后是否会正确显示省略号。</p>
-                     </div>
-                     <div class="px-4 pb-4 pt-2">
-                         <a href="#" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                             打开工具
-                         </a>
-                     </div>
-                 </div>
-            {% endif %}
-            <div id="no-results" class="col-span-full text-center text-gray-500 hidden py-10"> 没有找到匹配的工具。
+{# --- Assuming base.html has header blocks like these --- #}
+{# Optional: Define header_right if needed #}
+{# {% block header_right %}{% endblock %} #}
+{# --- End of assumed header blocks --- #}
+
+
+{# Add specific styles for this page #}
+{% block styles %}
+{{ super() }} {# Optional: Include styles from base.html if needed #}
+<style>
+    .tool-card {
+        background: #ffffff; /* White card background */
+        transition: box-shadow 0.2s ease-in-out; /* Smooth shadow transition */
+    }
+    .tool-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Softer hover shadow */
+    }
+    .hidden {
+        display: none;
+    }
+    /* Responsive adjustments for search/sort */
+    @media (max-width: 640px) {
+        .search-sort-container {
+            flex-direction: column;
+            align-items: stretch; /* Stretch items to full width */
+            gap: 0.75rem; /* Reduced gap */
+        }
+        .sort-buttons {
+            /* justify-content: space-between; */ /* Removed for better stacking */
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            gap: 0.5rem; /* Gap between buttons */
+        }
+        .sort-buttons button {
+            flex-grow: 1; /* Allow buttons to grow */
+            min-width: 80px; /* Minimum width for buttons */
+        }
+    }
+    /* Ensure line-clamp works (Tailwind might need a plugin, but this is a common utility) */
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+</style>
+{% endblock %}
+
+
+{# Override the main content block #}
+{% block content %}
+{# Search and Sort Container #}
+<div class="flex flex-col items-center justify-center mb-12 mt-8 search-sort-container">
+    {# Search Input #}
+    <div class="w-full max-w-2xl mb-6">
+        <div class="relative">
+            <input
+                type="text"
+                id="search-input"
+                placeholder="搜索工具..."
+                class="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-300 rounded-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg shadow-sm transition-all duration-200" >
+            {# Search Icon SVG #}
+            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+    </div>
+    {# Sort Buttons #}
+    <div class="sort-buttons flex items-center gap-3 mb-4">
+        <button id="sort-asc" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors shadow-sm">
+            A-Z
+        </button>
+        <button id="sort-desc" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors shadow-sm">
+            Z-A
+        </button>
+        <button id="sort-reset" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors shadow-sm">
+            重置
+        </button>
+    </div>
+</div>
+
+{# Tools Grid #}
+<div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {# Check if 'tools' variable is passed from backend #}
+    {% if tools %}
+        {# Loop through tools data #}
+        {% for tool in tools %}
+        <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="{{ tool.name }}" data-description="{{ tool.description }}">
+            <div class="p-4 flex-grow">
+                <h2 class="text-base font-medium text-gray-900 mb-1">{{ tool.name }}</h2>
+                <p class="text-sm text-gray-600 line-clamp-2">{{ tool.description }}</p>
+            </div>
+            <div class="px-4 pb-4 pt-2">
+                <a href="{{ tool.url }}" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    使用
+                </a>
             </div>
         </div>
-    </main>
-
-    <footer class="bg-white border-t border-gray-200 mt-10"> <div class="content-wrapper px-4 sm:px-6 lg:px-8 py-4">
-            <p class="text-center text-sm text-gray-500">
-                &copy; <span id="current-year"></span> Vibe Tools. 版权所有.
-            </p>
+        {% endfor %}
+    {% else %}
+        {# Fallback Example Cards if 'tools' is not available #}
+         <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="示例工具 A" data-description="这是一个示例工具的描述，用于展示卡片样式。">
+            <div class="p-4 flex-grow">
+                <h2 class="text-base font-medium text-gray-900 mb-1">示例工具 A</h2>
+                <p class="text-sm text-gray-600 line-clamp-2">这是一个示例工具的描述，用于展示卡片样式。</p>
+            </div>
+            <div class="px-4 pb-4 pt-2">
+                <a href="#" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    打开工具
+                </a>
+            </div>
         </div>
-    </footer>
+         <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="示例工具 B" data-description="这是另一个工具的描述，看看它如何适应。">
+            <div class="p-4 flex-grow">
+                <h2 class="text-base font-medium text-gray-900 mb-1">示例工具 B</h2>
+                <p class="text-sm text-gray-600 line-clamp-2">这是另一个工具的描述，看看它如何适应。</p>
+            </div>
+            <div class="px-4 pb-4 pt-2">
+                <a href="#" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    打开工具
+                </a>
+            </div>
+        </div>
+         <div class="tool-card rounded-lg overflow-hidden flex flex-col shadow-sm" data-name="长名称工具 C" data-description="这个工具的描述特别长，是为了测试文本换行和截断效果而设计的，看看在两行之后是否会正确显示省略号。">
+             <div class="p-4 flex-grow">
+                 <h2 class="text-base font-medium text-gray-900 mb-1">长名称工具 C</h2>
+                 <p class="text-sm text-gray-600 line-clamp-2">这个工具的描述特别长，是为了测试文本换行和截断效果而设计的，看看在两行之后是否会正确显示省略号。</p>
+             </div>
+             <div class="px-4 pb-4 pt-2">
+                 <a href="#" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                     打开工具
+                 </a>
+             </div>
+         </div>
+    {% endif %}
+    {# No Results Message - Initially hidden, managed by JS #}
+    <div id="no-results" class="col-span-full text-center text-gray-500 hidden py-10">
+        没有找到匹配的工具。
+    </div>
+</div>
+{% endblock %} {# End of content block #}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('search-input');
-            const toolsGrid = document.getElementById('tools-grid');
-            // Select only actual tool cards, excluding the no-results message
-            const toolCards = Array.from(toolsGrid.querySelectorAll('.tool-card[data-name]'));
-            const noResultsMessage = document.getElementById('no-results');
-            const sortAscButton = document.getElementById('sort-asc');
-            const sortDescButton = document.getElementById('sort-desc');
-            const sortResetButton = document.getElementById('sort-reset');
 
-            // Store the original order based on the initial DOM state
-            const originalOrder = Array.from(toolCards);
+{# Add specific JavaScript for this page #}
+{% block scripts %}
+{{ super() }} {# Optional: Include scripts from base.html if needed #}
+<script>
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        // Get references to DOM elements
+        const searchInput = document.getElementById('search-input');
+        const toolsGrid = document.getElementById('tools-grid');
+        // Select only actual tool cards, excluding the no-results message if it's inside the grid initially
+        const toolCards = Array.from(toolsGrid.querySelectorAll('.tool-card[data-name]'));
+        const noResultsMessage = document.getElementById('no-results');
+        const sortAscButton = document.getElementById('sort-asc');
+        const sortDescButton = document.getElementById('sort-desc');
+        const sortResetButton = document.getElementById('sort-reset');
+        const currentYearSpan = document.getElementById('current-year'); // Assuming base.html footer has this ID
 
-            // Set current year in footer
-            document.getElementById('current-year').textContent = new Date().getFullYear();
+        // Store the original order based on the initial DOM state
+        const originalOrder = Array.from(toolCards);
 
-            function filterAndSortTools(sortBy = null, ascending = true) {
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                let visibleCards = [];
+        // Set current year in footer (if the element exists)
+        if (currentYearSpan) {
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
 
-                // Filter first
-                toolCards.forEach(card => {
+        /**
+         * Filters and sorts the tool cards based on search term and sort order.
+         * @param {string|null} sortBy - 'name', 'original', or null (keep current order).
+         * @param {boolean} ascending - True for ascending sort, false for descending.
+         */
+        function filterAndSortTools(sortBy = null, ascending = true) {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleCards = [];
+
+            // --- Filtering Step ---
+            toolCards.forEach(card => {
+                // Check if card exists and has dataset properties
+                if (card && card.dataset && card.dataset.name && card.dataset.description) {
                     const name = card.dataset.name.toLowerCase();
                     const description = card.dataset.description.toLowerCase();
+                    // Determine visibility based on search term
                     const isVisible = name.includes(searchTerm) || description.includes(searchTerm);
+                    // Toggle the 'hidden' class based on visibility
                     card.classList.toggle('hidden', !isVisible);
+                    // Add to visible cards array if it should be shown
                     if (isVisible) {
                         visibleCards.push(card);
                     }
-                });
-
-                // Then sort the visible cards if a sort order is specified
-                if (sortBy === 'name') {
-                    visibleCards.sort((a, b) => {
-                        const nameA = a.dataset.name.toLowerCase();
-                        const nameB = b.dataset.name.toLowerCase();
-                        const comparison = nameA.localeCompare(nameB, 'zh-CN'); // Use localeCompare for proper sorting
-                        return ascending ? comparison : -comparison;
-                    });
-                } else if (sortBy === 'original') {
-                     // Sort based on the original DOM order index
-                     visibleCards.sort((a, b) => originalOrder.indexOf(a) - originalOrder.indexOf(b));
+                } else {
+                    console.warn("Skipping card due to missing data attributes:", card);
                 }
-                 // else: Keep the filtered order (which might be the original order if no search term)
+            });
 
-
-                // Re-append sorted visible cards to the grid
-                visibleCards.forEach(card => toolsGrid.appendChild(card));
-
-                // Append hidden cards (they remain hidden)
-                toolCards.forEach(card => {
-                    if (card.classList.contains('hidden')) {
-                        toolsGrid.appendChild(card);
-                    }
+            // --- Sorting Step (only sort visible cards) ---
+            if (sortBy === 'name') {
+                visibleCards.sort((a, b) => {
+                    const nameA = a.dataset.name.toLowerCase();
+                    const nameB = b.dataset.name.toLowerCase();
+                    // Use localeCompare for proper string comparison, especially with non-English characters
+                    const comparison = nameA.localeCompare(nameB, 'zh-CN');
+                    return ascending ? comparison : -comparison; // Adjust direction based on 'ascending' flag
                 });
-
-                // Ensure no-results message is correctly placed and toggled
-                toolsGrid.appendChild(noResultsMessage); // Move to end
-                noResultsMessage.classList.toggle('hidden', visibleCards.length > 0);
+            } else if (sortBy === 'original') {
+                 // Sort based on the original DOM order index stored earlier
+                 visibleCards.sort((a, b) => originalOrder.indexOf(a) - originalOrder.indexOf(b));
             }
+             // else: If sortBy is null or unrecognized, keep the filtered order (default behavior)
 
 
-            function resetView() {
+            // --- DOM Manipulation Step ---
+            // Re-append sorted visible cards to the grid container
+            visibleCards.forEach(card => toolsGrid.appendChild(card));
+
+            // Append hidden cards afterwards (they remain hidden but stay in the DOM for future filtering)
+            toolCards.forEach(card => {
+                if (card && card.classList.contains('hidden')) {
+                    toolsGrid.appendChild(card);
+                }
+            });
+
+            // Ensure the 'no-results' message is correctly placed at the end and its visibility is toggled
+            if (noResultsMessage) {
+                toolsGrid.appendChild(noResultsMessage); // Move to end of the grid
+                noResultsMessage.classList.toggle('hidden', visibleCards.length > 0); // Show if no visible cards
+            }
+        }
+
+
+        /**
+         * Resets the search input and restores the original order of tool cards.
+         */
+        function resetView() {
+            if (searchInput) {
                 searchInput.value = ''; // Clear search input
-                // Reset cards to original order and make them visible
-                originalOrder.forEach(card => {
+            }
+            // Reset cards to original order and make them visible
+            originalOrder.forEach(card => {
+                if (card) {
                     card.classList.remove('hidden');
                     toolsGrid.appendChild(card); // Append in original order
-                });
-                // Ensure no-results message is hidden and at the end
+                }
+            });
+            // Ensure no-results message is hidden and at the end
+            if (noResultsMessage) {
                 toolsGrid.appendChild(noResultsMessage);
                 noResultsMessage.classList.add('hidden');
             }
+        }
 
-            // Event Listeners
+        // --- Event Listeners ---
+        // Add listener to search input for real-time filtering
+        if (searchInput) {
             searchInput.addEventListener('input', () => filterAndSortTools()); // Filter on input, keep current sort
+        }
+        // Add listeners to sort buttons
+        if (sortAscButton) {
             sortAscButton.addEventListener('click', () => filterAndSortTools('name', true));
+        }
+        if (sortDescButton) {
             sortDescButton.addEventListener('click', () => filterAndSortTools('name', false));
+        }
+        if (sortResetButton) {
             sortResetButton.addEventListener('click', resetView);
+        }
 
-            // Initial load: Filter based on any initial search term (usually none) and show in original order
-            filterAndSortTools('original'); // Use 'original' to ensure correct initial display order
-        });
-    </script>
-</body>
-</html>
+        // Initial load: Filter based on any initial search term (usually none) and ensure original order.
+        filterAndSortTools('original');
+    });
+</script>
+{% endblock %} {# End of scripts block #}
+

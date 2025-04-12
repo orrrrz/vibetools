@@ -1,0 +1,105 @@
+/* General Mind Map Container */
+#mindmap-container {
+    width: 3000px; /* Large canvas for panning */
+    height: 2000px; /* Large canvas for panning */
+    cursor: grab; /* Indicate panning possibility */
+    background-color: #f8f9fa; /* Light background for the canvas */
+    background-image: radial-gradient(circle, #e0e0e0 1px, transparent 1px); /* Subtle grid */
+    background-size: 20px 20px;
+    position: relative; /* Crucial for absolute positioning of nodes */
+    transform-origin: 0 0; /* For potential zooming */
+}
+
+#mindmap-container:active {
+    cursor: grabbing;
+}
+
+/* Base Node Styling */
+.mindmap-node {
+    position: absolute; /* Nodes are positioned absolutely within the container */
+    background-color: #ffffff;
+    border: 1px solid #d1d5db; /* gray-300 */
+    border-radius: 8px; /* Rounded corners */
+    padding: 8px 16px; /* Adjust padding as needed */
+    font-size: 14px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    cursor: pointer; /* Indicate it's interactive */
+    min-width: 80px; /* Minimum width */
+    text-align: center;
+    white-space: nowrap; /* Prevent text wrapping initially */
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    z-index: 10; /* Ensure nodes are above lines */
+}
+
+/* Make node text editable */
+.mindmap-node[contenteditable="true"] {
+    cursor: text;
+    outline: none; /* Remove default outline */
+    border-color: #3b82f6; /* blue-500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* Focus ring */
+    white-space: normal; /* Allow wrapping during edit */
+}
+
+/* Styling for the Central Topic */
+.mindmap-node.central-topic {
+    background-color: #3b82f6; /* blue-500 */
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+}
+
+/* Styling for Main Topics (Level 1) */
+.mindmap-node.main-topic {
+    background-color: #ecfdf5; /* green-50 */
+    border-color: #10b981; /* green-500 */
+    color: #047857; /* green-700 */
+    font-weight: 500;
+    border-radius: 10px;
+}
+
+/* Styling for Sub Topics (Level 2+) */
+.mindmap-node.sub-topic {
+    background-color: #eff6ff; /* blue-50 */
+    border-color: #60a5fa; /* blue-400 */
+    color: #1e40af; /* blue-800 */
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+/* Styling for Selected Node */
+.mindmap-node.selected {
+    border-color: #f59e0b; /* amber-500 */
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4), 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    z-index: 20; /* Bring selected node to front */
+}
+
+/* Styling for Dragging Node */
+.mindmap-node.dragging {
+    opacity: 0.7;
+    cursor: grabbing;
+    z-index: 30; /* Ensure dragging node is on top */
+}
+
+/* Styling for LeaderLine connectors */
+.leader-line {
+    /* Default line style */
+    --leader-line-color: #9ca3af; /* gray-400 */
+    --leader-line-size: 2; /* Line thickness */
+    --leader-line-gradient: false; /* No gradient by default */
+    z-index: 5; /* Ensure lines are behind nodes but above background */
+}
+
+/* Style for lines connecting to main topics */
+.leader-line.main-connection {
+     --leader-line-color: #60a5fa; /* blue-400 */
+     --leader-line-size: 3;
+}
+
+/* Style for lines connecting to sub topics */
+.leader-line.sub-connection {
+     --leader-line-color: #a5b4fc; /* indigo-300 */
+     --leader-line-size: 2;
+}

@@ -26,7 +26,9 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex-shrink-0">
                     {% block header_left %}
-                    <span class="text-xl font-semibold text-gray-700">{{ header_title | default('小工具') }}</span>
+                    <a href="{{ url_for("main.index") }}" class="flex items-center">
+                        <span class="text-xl font-semibold text-gray-700">{{ header_title | default('Vibed') }}</span>
+                    </a>
                     {% endblock %}
                 </div>
 

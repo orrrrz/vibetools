@@ -1,132 +1,405 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown Online Editor</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
-    <link rel="stylesheet" href="{{ url_for('mdeditor.static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Markdown Editor</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            File
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" id="new-doc">New</a></li>
-                            <li><a class="dropdown-item" href="#" id="save-doc">Save</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/">Return to Platform</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Documents
-                        </a>
-                        <ul class="dropdown-menu" id="document-list">
-                            <li><a class="dropdown-item" href="#">Loading...</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            View
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" id="toggle-fold">Toggle Fold</a></li>
-                            <li><a class="dropdown-item" href="#" id="toggle-mode">Toggle Mode</a></li>
-                            <li class="dropdown-submenu">
-                                <a class="dropdown-item dropdown-toggle" href="#">Theme</a>
-                                <ul class="dropdown-menu" id="theme-list">
-                                    <li><a class="dropdown-item active" href="#" data-theme="github">Github</a></li>
-                                    <li><a class="dropdown-item" href="#" data-theme="dark">Dark</a></li>
-                                    <li><a class="dropdown-item" href="#" data-theme="solarized">Solarized</a></li>
-                                    <li><a class="dropdown-item" href="#" data-theme="nord">Nord</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Edit
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" id="copy-markdown">Copy Markdown</a></li>
-                            <li><a class="dropdown-item" href="#" id="copy-html">Copy HTML</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Tools
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" id="ai-continue">AI Continue</a></li>
-                            <li><a class="dropdown-item" href="#" id="ai-polish">AI Polish</a></li>
-                            <li><a class="dropdown-item" href="#" id="img-to-base64">Image to Base64</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-            <div class="col-md-6" id="editor-container">
-                <div class="editor-header">
-                    <input type="text" id="doc-title" class="form-control" placeholder="Untitled Document">
-                </div>
-                <textarea id="editor" placeholder="Start writing in Markdown..."></textarea>
-            </div>
-            <div class="col-md-6" id="preview-container">
-                <div class="preview-header">
-                </div>
-                <div id="preview"></div>
-            </div>
-        </div>
-    </div>
+{# Inherit from the base template #}
+{% extends "base.html" %}
 
-    <!-- Modals -->
-    <div class="modal fade" id="imageModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Convert Image URL to Base64</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+{# Set the page title #}
+{% block page_title %}Markdown Online Editor{% endblock %}
+
+{# Override the entire header block for the custom editor navbar #}
+{% block header %}
+{# Custom Navbar for Markdown Editor using Tailwind CSS #}
+{# Note: Dropdown functionality requires custom JavaScript (in main.js) #}
+<nav class="bg-gray-800 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8"> {# Use max-w-full or adjust as needed #}
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <span class="text-lg font-semibold">Markdown Editor</span>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="image-url" class="form-label">Image URL</label>
-                        <input type="text" class="form-control" id="image-url">
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        {# File Dropdown (Requires JS for toggle) #}
+                        <div class="relative inline-block text-left group">
+                            <button type="button" class="inline-flex justify-center w-full rounded-md px-3 py-2 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 focus:outline-none" id="options-menu-file" aria-haspopup="true" aria-expanded="false">
+                                File
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-file">
+                                <div class="py-1" role="none">
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="new-doc">New</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="save-doc">Save</a>
+                                    <hr class="border-gray-200 my-1">
+                                    <a href="/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">Return to Platform</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Documents Dropdown (Requires JS) #}
+                        <div class="relative inline-block text-left group">
+                             <button type="button" class="inline-flex justify-center w-full rounded-md px-3 py-2 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 focus:outline-none" id="options-menu-docs" aria-haspopup="true" aria-expanded="false">
+                                Documents
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                             <div class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-docs">
+                                 {# Inner div where JS populates the list #}
+                                 <div class="py-1" role="none" id="document-list">
+                                     <span class="block px-4 py-2 text-sm text-gray-500">Loading...</span>
+                                 </div>
+                             </div>
+                        </div>
+
+                        {# View Dropdown (Requires JS) #}
+                        <div class="relative inline-block text-left group">
+                             <button type="button" class="inline-flex justify-center w-full rounded-md px-3 py-2 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 focus:outline-none" id="options-menu-view" aria-haspopup="true" aria-expanded="false">
+                                View
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                             <div class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-view">
+                                 <div class="py-1" role="none">
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="toggle-fold">Toggle Fold</a>
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="toggle-mode">Toggle Mode</a>
+                                     {# Submenu for Theme (Requires JS/CSS for click/positioning) #}
+                                     <div class="relative group/submenu">
+                                         <a href="#" class="flex justify-between items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">
+                                             Theme
+                                             <svg class="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                                         </a>
+                                         <div class="absolute top-0 left-full ml-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover/submenu:block" id="theme-list">
+                                             {# Theme links - JS updates active state #}
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" data-theme="github">Github</a>
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" data-theme="dark">Dark</a>
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" data-theme="solarized">Solarized</a>
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" data-theme="nord">Nord</a>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                        </div>
+
+                        {# Edit Dropdown (Requires JS) #}
+                        <div class="relative inline-block text-left group">
+                             <button type="button" class="inline-flex justify-center w-full rounded-md px-3 py-2 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 focus:outline-none" id="options-menu-edit" aria-haspopup="true" aria-expanded="false">
+                                Edit
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                             <div class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-edit">
+                                 <div class="py-1" role="none">
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="copy-markdown">Copy Markdown</a>
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="copy-html">Copy HTML</a>
+                                 </div>
+                             </div>
+                        </div>
+
+                        {# Tools Dropdown (Requires JS) #}
+                        <div class="relative inline-block text-left group">
+                             <button type="button" class="inline-flex justify-center w-full rounded-md px-3 py-2 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 focus:outline-none" id="options-menu-tools" aria-haspopup="true" aria-expanded="false">
+                                Tools
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                             <div class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-tools">
+                                 <div class="py-1" role="none">
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="ai-continue">AI Continue</a>
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="ai-polish">AI Polish</a>
+                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" id="img-to-base64">Image to Base64</a>
+                                 </div>
+                             </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="convert-image">Convert</button>
-                </div>
+            </div>
+             {# Mobile Menu Button (Requires JS) #}
+            <div class="-mr-2 flex md:hidden">
+                <button type="button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false" id="mobile-menu-button">
+                    <span class="sr-only">Open main menu</span>
+                    {/* Icon when menu is closed. Heroicon name: outline/menu */}
+                    <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    {/* Icon when menu is open. Heroicon name: outline/x */}
+                    <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
         </div>
     </div>
+    {# Mobile menu, show/hide based on menu state (Requires JS) #}
+    <div class="md:hidden hidden" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {# Add mobile menu items here, mirroring dropdowns if needed #}
+            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">File</a>
+            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Documents</a>
+            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">View</a>
+            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Edit</a>
+            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Tools</a>
+            <hr class="border-gray-600 my-2">
+            <a href="/" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Return to Platform</a>
+        </div>
+    </div>
+</nav>
+{% endblock %} {# End of header override #}
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.2.12/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"></script>
-    <script>
-        // Sample content for initial display
-        window.sampleContent = `# Markdown在线编辑器示例
+
+{# Add necessary CSS links for libraries and embed custom styles #}
+{% block styles %}
+{{ super() }} {# Optional: Include styles from base.html if needed #}
+{# External Library CSS #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" id="highlight-theme"> {# Added ID for theme switching #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{# Link to external custom CSS is removed, styles embedded below #}
+{# <link rel="stylesheet" href="{{ url_for('mdeditor.static', filename='css/style.css') }}"> #}
+
+{# Embedded Custom Styles #}
+<style>
+    /* Basic body reset (may overlap with base.html styles) */
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevent body scroll */
+        height: 100vh;
+    }
+
+    /* Layout adjustments for editor panes */
+    /* Ensure editor/preview panes take full height below the navbar */
+    #editor-container, #preview-container {
+        height: calc(100vh - 4rem); /* Full height minus navbar height (h-16 = 4rem) */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Hide overflow on containers */
+    }
+
+    /* Editor textarea styling */
+     #editor {
+        flex-grow: 1; /* Take available vertical space */
+        border: none;
+        outline: none;
+        padding: 1rem; /* Tailwind p-4 */
+        resize: none; /* Disable manual resize */
+        font-family: monospace; /* Use monospace font */
+        font-size: 0.875rem; /* Tailwind text-sm */
+        line-height: 1.5;
+        overflow-y: auto; /* Allow vertical scroll */
+        background-color: #ffffff; /* Default white background */
+        color: #1f2937; /* Default text color */
+    }
+
+    /* Preview pane styling */
+     #preview {
+        flex-grow: 1; /* Take available vertical space */
+        padding: 1rem; /* Tailwind p-4 */
+        overflow-y: auto; /* Allow vertical scroll */
+        border-left: 1px solid #e5e7eb; /* Separator */
+        background-color: #f9fafb; /* Default light background */
+        color: #1f2937; /* Default text color */
+    }
+     /* Apply prose styles for better markdown rendering */
+     #preview.prose {
+         /* Tailwind prose handles typography, spacing, etc. */
+         /* Add overrides here if needed */
+     }
+
+    /* Editor/Preview Headers */
+    .editor-header, .preview-header {
+        padding: 0.5rem 1rem; /* Tailwind px-4 py-2 */
+        background-color: #f9fafb; /* Light gray header background */
+        border-bottom: 1px solid #e5e7eb; /* Tailwind border-gray-200 */
+        flex-shrink: 0; /* Prevent header from shrinking */
+        height: 3.5rem; /* Match navbar h-16 */
+        display: flex;
+        align-items: center;
+    }
+    .preview-header {
+         /* Keep preview header potentially for future use, but hide */
+         /* display: none; */ /* Controlled by HTML structure now */
+    }
+
+    /* Document Title Input */
+    #doc-title {
+        /* Styles applied via Tailwind classes in HTML */
+    }
+
+    /* Table of Contents (Styled via Tailwind in JS) */
+    /* .toc { ... } */ /* Removed, handled by JS */
+
+    /* Code block styling (Primarily handled by highlight.js theme) */
+    /* Add base styling if needed */
+    #preview pre {
+        border-radius: 0.375rem; /* Tailwind rounded-md */
+        padding: 1rem; /* Tailwind p-4 */
+        overflow-x: auto;
+        /* Background/color set by highlight.js theme and body theme class */
+    }
+    #preview code:not(pre code) { /* Inline code */
+        background-color: rgba(209, 213, 219, 0.3); /* Tailwind bg-gray-300 opacity-30 */
+        padding: 0.1em 0.3em;
+        border-radius: 0.25rem; /* Tailwind rounded-sm */
+        font-size: 0.85em;
+    }
+
+    /* Save Button States */
+    #save-doc.saving { /* Style the button directly */
+        color: #f59e0b; /* Tailwind text-amber-500 */
+        /* Add other styles like cursor-wait if needed */
+    }
+    #save-doc.saved {
+        color: #10b981; /* Tailwind text-emerald-500 */
+    }
+
+    /* --- Theme Styles --- */
+    /* Apply theme colors primarily to editor and preview backgrounds/text */
+
+    /* Dark Theme */
+    body.theme-dark { background-color: #1f2937; } /* Darker body bg */
+    body.theme-dark #editor { background-color: #1f2937; color: #d1d5db; } /* Dark editor bg, light text */
+    body.theme-dark #preview { background-color: #111827; color: #d1d5db; border-left-color: #374151; } /* Darker preview bg */
+    body.theme-dark .editor-header, body.theme-dark .preview-header { background-color: #374151; border-bottom-color: #4b5563; }
+    body.theme-dark #doc-title { color: #d1d5db; }
+    body.theme-dark #preview pre { background-color: #374151; } /* Darker code blocks */
+    body.theme-dark #preview code:not(pre code) { background-color: rgba(75, 85, 99, 0.5); color: #e5e7eb; } /* Darker inline code */
+    body.theme-dark .toc { background-color: #374151; border-color: #4b5563; color: #d1d5db; }
+    body.theme-dark .toc a { color: #93c5fd; } /* Lighter blue links */
+
+    /* Solarized Theme */
+    body.theme-solarized { background-color: #fdf6e3; }
+    body.theme-solarized #editor { background-color: #fdf6e3; color: #657b83; }
+    body.theme-solarized #preview { background-color: #eee8d5; color: #586e75; border-left-color: #eee8d5; }
+    body.theme-solarized .editor-header, body.theme-solarized .preview-header { background-color: #eee8d5; border-bottom-color: #cdc8b1; }
+    body.theme-solarized #doc-title { color: #073642; }
+    body.theme-solarized #preview pre { background-color: #fdf6e3; }
+    body.theme-solarized #preview code:not(pre code) { background-color: rgba(147, 161, 161, 0.2); } /* Solarized base01 */
+    body.theme-solarized .toc { background-color: #eee8d5; border-color: #cdc8b1; color: #586e75; }
+    body.theme-solarized .toc a { color: #268bd2; } /* Solarized blue */
+
+    /* Nord Theme */
+    body.theme-nord { background-color: #2e3440; }
+    body.theme-nord #editor { background-color: #2e3440; color: #d8dee9; }
+    body.theme-nord #preview { background-color: #3b4252; color: #eceff4; border-left-color: #4c566a; }
+    body.theme-nord .editor-header, body.theme-nord .preview-header { background-color: #434c5e; border-bottom-color: #4c566a; }
+    body.theme-nord #doc-title { color: #eceff4; }
+    body.theme-nord #preview pre { background-color: #2e3440; }
+    body.theme-nord #preview code:not(pre code) { background-color: rgba(76, 86, 106, 0.5); } /* Nord polar night 3 */
+    body.theme-nord .toc { background-color: #434c5e; border-color: #4c566a; color: #eceff4; }
+    body.theme-nord .toc a { color: #88c0d0; } /* Nord frost 3 */
+
+    /* --- UI Mode Styles --- */
+
+    /* Immersive Mode (Hide Preview) */
+    body.immersive-mode #preview-container {
+        display: none;
+    }
+    body.immersive-mode #editor-container {
+        width: 100%;
+        /* Tailwind md:w-1/2 is overridden by width: 100% */
+    }
+
+    /* Folded Mode (Minimal Navbar) */
+    /* Note: Relies on the specific Navbar structure in the HTML */
+    body.folded nav {
+         height: 2rem; /* Smaller navbar */
+         min-height: 2rem;
+    }
+    body.folded nav .hidden.md\:block, /* Hide desktop nav items */
+    body.folded nav .flex-shrink-0 span, /* Hide main title text */
+    body.folded nav #mobile-menu-button /* Hide mobile menu button */
+     {
+        display: none;
+    }
+     body.folded nav .flex.items-center.justify-between {
+         height: 2rem; /* Ensure inner container shrinks */
+     }
+     /* Adjust editor/preview height when folded */
+     body.folded #editor-container, body.folded #preview-container {
+        height: calc(100vh - 2rem); /* Adjust height calc */
+    }
+
+    /* Basic dropdown hover effect (Tailwind handles this via group-hover) */
+    /* .group:hover .group-hover\:block { display: block; } */
+    /* Basic submenu hover (Tailwind handles this via group/submenu) */
+    /* .group\/submenu:hover .group-hover\/submenu\:block { display: block; } */
+
+    /* Hide scrollbar for cleaner look if desired (use with caution) */
+    /* #editor::-webkit-scrollbar, #preview::-webkit-scrollbar { display: none; }
+    #editor, #preview { -ms-overflow-style: none; scrollbar-width: none; } */
+
+</style>
+{% endblock %}
+
+
+{# Override the main content block #}
+{% block content %}
+{# Use flexbox for side-by-side layout. Remove padding/margin from base.html content block if they interfere. #}
+<div class="flex flex-col md:flex-row h-full w-full"> {# Ensure flex container takes height #}
+    {# Editor Pane #}
+    <div class="w-full md:w-1/2" id="editor-container"> {# Takes full height via flex parent #}
+        <div class="editor-header">
+            {# Document Title Input - Tailwind styled #}
+            <input type="text" id="doc-title" class="w-full bg-transparent border-none focus:ring-0 p-1 text-lg font-medium text-gray-700 placeholder-gray-400" placeholder="Untitled Document">
+        </div>
+        {# Markdown Editor Textarea #}
+        <textarea id="editor" class="w-full h-full focus:outline-none" placeholder="Start writing in Markdown..."></textarea> {# Basic styles applied via CSS block #}
+    </div>
+    {# Preview Pane #}
+    <div class="w-full md:w-1/2 hidden md:flex md:flex-col" id="preview-container"> {# Hidden on small screens initially, toggle with JS #}
+         <div class="preview-header"> {# Takes height via CSS block #}
+             {# Preview header content can go here if needed #}
+         </div>
+        {# Rendered HTML Preview #}
+        {# Add 'prose' class for Tailwind typography styling #}
+        <div id="preview" class="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none h-full"> {# Basic styles applied via CSS block #}
+            {# Content rendered by Marked.js will appear here #}
+        </div>
+    </div>
+</div>
+
+{# --- Modals (Tailwind CSS structure) --- #}
+{# IMPORTANT: Your JS needs to toggle the 'hidden' class on these modal containers #}
+<div id="imageModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 hidden"> {# Higher z-index #}
+    {# Modal content #}
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        {# Modal header #}
+        <div class="flex justify-between items-center p-4 border-b border-gray-200">
+            <h5 class="text-lg font-semibold text-gray-800">Convert Image URL to Base64</h5>
+            {# Close button - JS needs to add event listener to hide modal #}
+            <button type="button" class="text-gray-400 hover:text-gray-600 modal-close-button" data-modal-id="imageModal">
+                <span class="text-2xl">&times;</span>
+            </button>
+        </div>
+        {# Modal body #}
+        <div class="p-4">
+            <div class="mb-3">
+                <label for="image-url" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                {# Tailwind styled input #}
+                <input type="text" id="image-url" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+        </div>
+        {# Modal footer #}
+        <div class="flex justify-end p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg space-x-2">
+             {# Tailwind styled buttons #}
+            <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 modal-close-button" data-modal-id="imageModal">
+                Close
+            </button>
+             <button type="button" id="convert-image" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Convert
+            </button>
+        </div>
+    </div>
+</div>
+{# --- End Modals --- #}
+
+{% endblock %} {# End of content block #}
+
+
+{# Add necessary JavaScript links and inline scripts #}
+{% block scripts %}
+{{ super() }} {# Optional: Include scripts from base.html if needed #}
+{# External JS Libraries #}
+<script src="https://cdn.jsdelivr.net/npm/marked@4.2.12/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"></script>
+
+{# Inline script for sample content #}
+<script>
+    // Sample content for initial display if needed by main.js
+    window.sampleContent = `# Markdown在线编辑器示例
 
 [TOC]
 
@@ -186,7 +459,10 @@ $$
 - 输入\`\`\`后会自动补全结束的\`\`\`
 - 输入$$后会自动补全结束的$$
 `;
-    </script>
-    <script src="{{ url_for('mdeditor.static', filename='js/main.js') }}"></script>
-</body>
-</html> 
+</script>
+
+{# Link to custom main JS file #}
+{# IMPORTANT: This main.js file needs significant updates to handle #}
+{# Tailwind modals and the Tailwind-based navbar dropdowns. #}
+<script src="{{ url_for('mdeditor.static', filename='js/main.js') }}"></script>
+{% endblock %} {# End of scripts block #}

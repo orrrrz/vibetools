@@ -1,342 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mind Map Editor</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/Lucide.css">
-    <style>
-        /* Custom Styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            overscroll-behavior: none;
-        }
-        .node {
-            cursor: grab;
-            min-width: 80px;
-        }
-        .node.dragging {
-            cursor: grabbing;
-            opacity: 0.7;
-            z-index: 1000;
-        }
-        .node-text {
-            outline: none;
-            min-height: 1.5em;
-            word-wrap: break-word;
-        }
-        .connector {
-            stroke: #94a3b8; /* slate-400 */
-            stroke-width: 2;
-            fill: none;
-            pointer-events: none;
-        }
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none; margin: 0;
-        }
-        input[type=number] { -moz-appearance: textfield; }
-        .lucide {
-          font-family: 'LucideIcons'; font-style: normal; font-weight: normal;
-          font-variant: normal; text-rendering: auto; line-height: 1;
-          -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-        }
-        .transform-origin-center { transform-origin: center center; }
-        #import-file-input { display: none; }
+{% extends 'base.html' %}
 
-        /* Language Dropdown Styles */
-        .lang-dropdown { display: none; }
-        .lang-dropdown.show { display: block; }
+{# Override header title #}
+{% block header_left %}
+<a href="/" class="text-xl font-semibold text-gray-700 hover:text-blue-600 mr-4">Vibe Tools</a>
+<span class="text-xl font-semibold text-gray-500">/ 思维导图 </span>
+{% endblock %}
 
-        /* Style adjustments for new button look */
-        .toolbar-btn {
-            background-color: #f3f4f6; /* bg-gray-100 */
-            color: #374151; /* text-gray-700 */
-            border: 1px solid transparent;
-        }
-        .toolbar-btn:hover {
-            background-color: #e5e7eb; /* hover:bg-gray-200 */
-            border-color: #d1d5db; /* border-gray-300 */
-        }
-        .toolbar-btn:focus {
-             outline: none;
-             box-shadow: 0 0 0 2px #bfdbfe; /* focus:ring-2 focus:ring-blue-300 (example) */
-        }
-        .utility-btn {
-             background-color: #e5e7eb; /* bg-gray-200 */
-             color: #374151; /* text-gray-700 */
-             border: 1px solid transparent;
-        }
-         .utility-btn:hover {
-             background-color: #d1d5db; /* hover:bg-gray-300 */
-             border-color: #9ca3af; /* border-gray-400 */
-         }
-         .utility-btn:focus {
-              outline: none;
-              box-shadow: 0 0 0 2px #9ca3af; /* focus:ring-2 focus:ring-gray-400 */
-         }
-    </style>
-</head>
-<body class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+{# Add control buttons to the header right section #}
+{% block header_right %}
+<div class="flex space-x-2">
+    <button id="add-child-btn" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">添加子节点</button>
+    <button id="add-sibling-btn" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">添加同级</button>
+    <button id="delete-node-btn" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">删除节点</button>
+</div>
+{% endblock %}
 
-    <div class="bg-white shadow-md p-2 flex items-center space-x-2 rounded-b-lg z-10 flex-wrap">
-        <button id="add-child-btn" class="toolbar-btn p-2 rounded-lg flex items-center space-x-1">
-            <i class="lucide" data-lucide="git-fork"></i>
-            <span data-translate-key="add-child-btn-text">Child</span>
-        </button>
-        <button id="add-sibling-btn" class="toolbar-btn p-2 rounded-lg flex items-center space-x-1">
-            <i class="lucide" data-lucide="corner-down-right"></i>
-            <span data-translate-key="add-sibling-btn-text">Sibling</span>
-        </button>
-        <button id="delete-node-btn" class="toolbar-btn p-2 rounded-lg flex items-center space-x-1">
-            <i class="lucide" data-lucide="trash-2"></i>
-            <span data-translate-key="delete-node-btn-text">Delete</span>
-        </button>
-         <button id="optimize-layout-btn" class="toolbar-btn p-2 rounded-lg flex items-center space-x-1">
-            <i class="lucide" data-lucide="wand-2"></i>
-            <span data-translate-key="optimize-layout-btn-text">Layout</span>
-        </button>
-         <button id="import-json-btn" class="toolbar-btn p-2 rounded-lg flex items-center space-x-1">
-            <i class="lucide" data-lucide="upload"></i>
-            <span data-translate-key="import-json-btn-text">Import</span>
-        </button>
-         <button id="export-json-btn" class="toolbar-btn p-2 rounded-lg flex items-center space-x-1">
-            <i class="lucide" data-lucide="download"></i>
-            <span data-translate-key="export-json-btn-text">Export</span>
-        </button>
-        <input type="file" id="import-file-input" accept=".json">
+{# Main content area for the mind map #}
+{% block content %}
+{# Link to custom CSS for the mind map (ensure this path is correct in your Flask static setup) #}
+<link rel="stylesheet" href="{{ url_for('mindmap.static', filename='css/style.css') }}">
+{# Add specific styles needed for the mind map container and lines #}
+<style>
+    /* Ensure main content area takes available height and allows overflow for panning */
+    /* Note: .main-content styling might be better placed in base.html or a global CSS */
+    .main-content-mindmap {
+        /* Use 100% height of the parent main block, minus potential padding */
+        height: calc(100vh - 10rem); /* Adjust based on actual header/footer/padding height */
+        min-height: 500px; /* Minimum height */
+        overflow: hidden; /* Hide scrollbars, panning/zooming handled by JS */
+        position: relative; /* Needed for absolute positioning of nodes and SVG overlay */
+        width: 100%; /* Take full width of the content block */
+    }
+    /* Style for the leader-line connectors */
+    .leader-line {
+        transition: all 0.1s ease-in-out; /* Smooth line updates */
+    }
+    /* Hide default drag ghost image */
+    .mindmap-node.dragging-ghost {
+        opacity: 0;
+    }
+    /* Prevent text selection during drag - apply to body if possible in base.html or here */
+    body {
+         user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+</style>
 
-        <div class="flex items-center space-x-1">
-             <button id="zoom-out-btn" title="Zoom Out" class="utility-btn p-2 rounded-lg">
-                <i class="lucide" data-lucide="zoom-out"></i>
-            </button>
-             <input type="number" id="zoom-level" value="100" class="w-16 text-center border rounded-lg p-1 focus:outline-none focus:ring-2 focus:ring-blue-400" min="10" max="200" step="10">
-             <span class="text-gray-600">%</span>
-             <button id="zoom-in-btn" title="Zoom In" class="utility-btn p-2 rounded-lg">
-                <i class="lucide" data-lucide="zoom-in"></i>
-            </button>
-             <button id="reset-view-btn" title="Reset View" class="utility-btn p-2 rounded-lg ml-2">
-                <i class="lucide" data-lucide="refresh-cw"></i>
-            </button>
-        </div>
-
-         <div class="relative ml-auto">
-             <button id="lang-switcher-btn" class="utility-btn p-2 rounded-lg flex items-center space-x-1">
-                 <i class="lucide" data-lucide="languages"></i>
-                 <span id="lang-switcher-text" data-translate-key="lang-switcher-text">English</span>
-                 <i class="lucide" data-lucide="chevron-down" class="w-4 h-4"></i>
-             </button>
-             <div id="lang-dropdown-menu" class="lang-dropdown absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-20 border border-gray-200">
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="zh-CN">简体中文</a>
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="zh-TW">繁體中文</a>
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="en">English</a>
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="ja">日本語</a>
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="es">Español</a>
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="fr">Français</a>
-                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="de">Deutsch</a>
-             </div>
-         </div>
+<div id="mindmap-container" class="relative w-full h-full main-content-mindmap">
     </div>
 
-    <div id="mindmap-container" class="flex-grow relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-200">
-        <svg id="mindmap-svg" width="100%" height="100%" class="absolute top-0 left-0">
-            <defs></defs>
-            <g id="connectors-group"></g>
-            <g id="nodes-group"></g>
-        </svg>
-        <div id="mindmap-nodes" class="absolute top-0 left-0 w-full h-full pointer-events-none transform-origin-top-left"></div>
-    </div>
+{# Load JavaScript libraries and custom script at the end #}
+<script src="https://cdn.jsdelivr.net/npm/leader-line-new@1.1.9/leader-line.min.js"></script>
+<script src="{{ url_for('mindmap.static', filename='js/script.js') }}"></script>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons();
+{% endblock %}
 
-        // --- Constants ---
-        const NODE_SPACING_X = 150;
-        const NODE_SPACING_Y = 60;
-
-        // --- DOM Elements ---
-        // ... (获取元素代码不变) ...
-        const container = document.getElementById('mindmap-container');
-        const svg = document.getElementById('mindmap-svg');
-        const nodesGroup = document.getElementById('nodes-group');
-        const connectorsGroup = document.getElementById('connectors-group');
-        const nodesContainer = document.getElementById('mindmap-nodes');
-        const addChildBtn = document.getElementById('add-child-btn');
-        const addSiblingBtn = document.getElementById('add-sibling-btn');
-        const deleteNodeBtn = document.getElementById('delete-node-btn');
-        const optimizeLayoutBtn = document.getElementById('optimize-layout-btn');
-        const importJsonBtn = document.getElementById('import-json-btn');
-        const exportJsonBtn = document.getElementById('export-json-btn');
-        const importFileInput = document.getElementById('import-file-input');
-        const zoomInBtn = document.getElementById('zoom-in-btn');
-        const zoomOutBtn = document.getElementById('zoom-out-btn');
-        const zoomLevelInput = document.getElementById('zoom-level');
-        const resetViewBtn = document.getElementById('reset-view-btn');
-        const langSwitcherBtn = document.getElementById('lang-switcher-btn');
-        const langSwitcherText = document.getElementById('lang-switcher-text');
-        const langDropdownMenu = document.getElementById('lang-dropdown-menu');
-
-
-        // --- Mind Map State ---
-        let nodes = {};
-        let nextNodeId = 0;
-        let selectedNodeId = null;
-        let draggingNodeId = null;
-        let dragOffsetX = 0, dragOffsetY = 0;
-        let isPanning = false;
-        let panStartX = 0, panStartY = 0;
-        let currentScale = 1;
-        let translateX = 0, translateY = 0;
-        let currentLanguage = 'en'; // Default language English
-
-        // --- Translations ---
-        const translations = { /* ... 内容不变 ... */
-             'zh-CN': { 'add-child-btn-text': '子节点', 'add-child-btn-title': '添加子节点 (Tab)', 'add-sibling-btn-text': '同级', 'add-sibling-btn-title': '添加同级节点 (Enter)', 'delete-node-btn-text': '删除', 'delete-node-btn-title': '删除节点 (Delete/Backspace)', 'optimize-layout-btn-text': '布局', 'optimize-layout-btn-title': '优化布局', 'import-json-btn-text': '导入', 'import-json-btn-title': '从 JSON 导入', 'export-json-btn-text': '导出', 'export-json-btn-title': '导出为 JSON', 'lang-switcher-text': '简体中文', 'zoom-out-btn-title': '缩小', 'zoom-in-btn-title': '放大', 'reset-view-btn-title': '重置视图', 'import-success': '思维导图导入成功！', 'import-fail': '导入失败: ', 'import-invalid-format': '无效的 JSON 文件格式。缺少根节点或必要属性。', 'export-no-root': '没有可导出的根节点。', 'export-fail-generate': '无法生成导出数据。', 'export-fail': '导出失败，请查看控制台获取更多信息。', 'read-file-fail': '读取文件失败。', 'delete-root-warn': '根节点有子节点，暂不允许删除。', 'add-child-select-prompt': '请先选择一个节点以添加子节点。', 'add-sibling-select-prompt': '请先选择一个节点以添加同级节点。', 'add-sibling-root-error': '根节点不能添加同级节点。', 'delete-select-prompt': '请先选择要删除的节点。', },
-             'zh-TW': { 'add-child-btn-text': '子節點', 'add-child-btn-title': '新增子節點 (Tab)', 'add-sibling-btn-text': '同級', 'add-sibling-btn-title': '新增同級節點 (Enter)', 'delete-node-btn-text': '刪除', 'delete-node-btn-title': '刪除節點 (Delete/Backspace)', 'optimize-layout-btn-text': '佈局', 'optimize-layout-btn-title': '優化佈局', 'import-json-btn-text': '匯入', 'import-json-btn-title': '從 JSON 匯入', 'export-json-btn-text': '匯出', 'export-json-btn-title': '匯出為 JSON', 'lang-switcher-text': '繁體中文', 'zoom-out-btn-title': '縮小', 'zoom-in-btn-title': '放大', 'reset-view-btn-title': '重設視圖', 'import-success': '心智圖匯入成功！', 'import-fail': '匯入失敗: ', 'import-invalid-format': '無效的 JSON 文件格式。缺少根節點或必要屬性。', 'export-no-root': '沒有可匯出的根節點。', 'export-fail-generate': '無法產生匯出資料。', 'export-fail': '匯出失敗，請查看主控台獲取更多資訊。', 'read-file-fail': '讀取檔案失敗。', 'delete-root-warn': '根節點有子節點，暫不允許刪除。', 'add-child-select-prompt': '請先選擇一個節點以新增子節點。', 'add-sibling-select-prompt': '請先選擇一個節點以新增同級節點。', 'add-sibling-root-error': '根節點不能新增同級節點。', 'delete-select-prompt': '請先選擇要刪除的節點。', },
-             'en': { 'add-child-btn-text': 'Child', 'add-child-btn-title': 'Add Child Node (Tab)', 'add-sibling-btn-text': 'Sibling', 'add-sibling-btn-title': 'Add Sibling Node (Enter)', 'delete-node-btn-text': 'Delete', 'delete-node-btn-title': 'Delete Node (Delete/Backspace)', 'optimize-layout-btn-text': 'Layout', 'optimize-layout-btn-title': 'Optimize Layout', 'import-json-btn-text': 'Import', 'import-json-btn-title': 'Import from JSON', 'export-json-btn-text': 'Export', 'export-json-btn-title': 'Export as JSON', 'lang-switcher-text': 'English', 'zoom-out-btn-title': 'Zoom Out', 'zoom-in-btn-title': 'Zoom In', 'reset-view-btn-title': 'Reset View', 'import-success': 'Mind map imported successfully!', 'import-fail': 'Import failed: ', 'import-invalid-format': 'Invalid JSON file format. Missing root node or required properties.', 'export-no-root': 'No root node to export.', 'export-fail-generate': 'Could not generate export data.', 'export-fail': 'Export failed. Check console for details.', 'read-file-fail': 'Failed to read file.', 'delete-root-warn': 'Cannot delete root node with children yet.', 'add-child-select-prompt': 'Please select a node first to add a child.', 'add-sibling-select-prompt': 'Please select a node first to add a sibling.', 'add-sibling-root-error': 'Cannot add a sibling to the root node.', 'delete-select-prompt': 'Please select a node to delete first.', },
-             'ja': { 'add-child-btn-text': '子ノード', 'add-child-btn-title': '子ノードを追加 (Tab)', 'add-sibling-btn-text': '兄弟', 'add-sibling-btn-title': '兄弟ノードを追加 (Enter)', 'delete-node-btn-text': '削除', 'delete-node-btn-title': 'ノードを削除 (Delete/Backspace)', 'optimize-layout-btn-text': 'レイアウト', 'optimize-layout-btn-title': 'レイアウトを最適化', 'import-json-btn-text': 'インポート', 'import-json-btn-title': 'JSONからインポート', 'export-json-btn-text': 'エクスポート', 'export-json-btn-title': 'JSONとしてエクスポート', 'lang-switcher-text': '日本語', 'zoom-out-btn-title': '縮小', 'zoom-in-btn-title': '拡大', 'reset-view-btn-title': 'ビューをリセット', 'import-success': 'マインドマップが正常にインポートされました！', 'import-fail': 'インポート失敗: ', 'import-invalid-format': '無効なJSONファイル形式です。ルートノードまたは必要なプロパティがありません。', 'export-no-root': 'エクスポートするルートノードがありません。', 'export-fail-generate': 'エクスポートデータを生成できませんでした。', 'export-fail': 'エクスポートに失敗しました。詳細はコンソールを確認してください。', 'read-file-fail': 'ファイルの読み込みに失敗しました。', 'delete-root-warn': '子ノードを持つルートノードはまだ削除できません。', 'add-child-select-prompt': '子ノードを追加するには、まずノードを選択してください。', 'add-sibling-select-prompt': '兄弟ノードを追加するには、まずノードを選択してください。', 'add-sibling-root-error': 'ルートノードに兄弟ノードを追加することはできません。', 'delete-select-prompt': '削除するノードをまず選択してください。', },
-              'es': { 'add-child-btn-text': 'Hijo', 'add-child-btn-title': 'Añadir Nodo Hijo (Tab)', 'add-sibling-btn-text': 'Hermano', 'add-sibling-btn-title': 'Añadir Nodo Hermano (Enter)', 'delete-node-btn-text': 'Borrar', 'delete-node-btn-title': 'Borrar Nodo (Delete/Backspace)', 'optimize-layout-btn-text': 'Diseño', 'optimize-layout-btn-title': 'Optimizar Diseño', 'import-json-btn-text': 'Importar', 'import-json-btn-title': 'Importar desde JSON', 'export-json-btn-text': 'Exportar', 'export-json-btn-title': 'Exportar como JSON', 'lang-switcher-text': 'Español', 'zoom-out-btn-title': 'Alejar', 'zoom-in-btn-title': 'Acercar', 'reset-view-btn-title': 'Restablecer Vista', 'import-success': '¡Mapa mental importado con éxito!', 'import-fail': 'Falló la importación: ', 'import-invalid-format': 'Formato de archivo JSON inválido. Falta nodo raíz o propiedades requeridas.', 'export-no-root': 'No hay nodo raíz para exportar.', 'export-fail-generate': 'No se pudieron generar los datos de exportación.', 'export-fail': 'Falló la exportación. Verifique la consola para más detalles.', 'read-file-fail': 'Falló la lectura del archivo.', 'delete-root-warn': 'Aún no se puede eliminar el nodo raíz con hijos.', 'add-child-select-prompt': 'Por favor, seleccione un nodo primero para añadir un hijo.', 'add-sibling-select-prompt': 'Por favor, seleccione un nodo primero para añadir un hermano.', 'add-sibling-root-error': 'No se puede añadir un hermano al nodo raíz.', 'delete-select-prompt': 'Por favor, seleccione primero un nodo para borrar.', },
-             'fr': { 'add-child-btn-text': 'Enfant', 'add-child-btn-title': 'Ajouter Nœud Enfant (Tab)', 'add-sibling-btn-text': 'Frère', 'add-sibling-btn-title': 'Ajouter Nœud Frère (Enter)', 'delete-node-btn-text': 'Suppr.', 'delete-node-btn-title': 'Supprimer Nœud (Delete/Backspace)', 'optimize-layout-btn-text': 'Layout', 'optimize-layout-btn-title': 'Optimiser Layout', 'import-json-btn-text': 'Importer', 'import-json-btn-title': 'Importer depuis JSON', 'export-json-btn-text': 'Exporter', 'export-json-btn-title': 'Exporter en JSON', 'lang-switcher-text': 'Français', 'zoom-out-btn-title': 'Zoom Arrière', 'zoom-in-btn-title': 'Zoom Avant', 'reset-view-btn-title': 'Réinitialiser Vue', 'import-success': 'Carte mentale importée avec succès !', 'import-fail': 'Échec de l\'importation : ', 'import-invalid-format': 'Format de fichier JSON invalide. Nœud racine ou propriétés requises manquants.', 'export-no-root': 'Pas de nœud racine à exporter.', 'export-fail-generate': 'Impossible de générer les données d\'exportation.', 'export-fail': 'Échec de l\'exportation. Vérifiez la console pour les détails.', 'read-file-fail': 'Échec de la lecture du fichier.', 'delete-root-warn': 'Impossible de supprimer le nœud racine avec des enfants pour le moment.', 'add-child-select-prompt': 'Veuillez d\'abord sélectionner un nœud pour ajouter un enfant.', 'add-sibling-select-prompt': 'Veuillez d\'abord sélectionner un nœud pour ajouter un frère.', 'add-sibling-root-error': 'Impossible d\'ajouter un frère au nœud racine.', 'delete-select-prompt': 'Veuillez d\'abord sélectionner un nœud à supprimer.', },
-             'de': { 'add-child-btn-text': 'Kind', 'add-child-btn-title': 'Kindknoten hinzufügen (Tab)', 'add-sibling-btn-text': 'Geschw.', 'add-sibling-btn-title': 'Geschwisterknoten hinzufügen (Enter)', 'delete-node-btn-text': 'Löschen', 'delete-node-btn-title': 'Knoten löschen (Delete/Backspace)', 'optimize-layout-btn-text': 'Layout', 'optimize-layout-btn-title': 'Layout optimieren', 'import-json-btn-text': 'Import', 'import-json-btn-title': 'Aus JSON importieren', 'export-json-btn-text': 'Export', 'export-json-btn-title': 'Als JSON exportieren', 'lang-switcher-text': 'Deutsch', 'zoom-out-btn-title': 'Verkleinern', 'zoom-in-btn-title': 'Vergrößern', 'reset-view-btn-title': 'Ansicht zurücksetzen', 'import-success': 'Mindmap erfolgreich importiert!', 'import-fail': 'Import fehlgeschlagen: ', 'import-invalid-format': 'Ungültiges JSON-Dateiformat. Stammknoten oder erforderliche Eigenschaften fehlen.', 'export-no-root': 'Kein Stammknoten zum Exportieren.', 'export-fail-generate': 'Exportdaten konnten nicht generiert werden.', 'export-fail': 'Export fehlgeschlagen. Überprüfen Sie die Konsole für Details.', 'read-file-fail': 'Datei konnte nicht gelesen werden.', 'delete-root-warn': 'Stammknoten mit Kindern kann noch nicht gelöscht werden.', 'add-child-select-prompt': 'Bitte wählen Sie zuerst einen Knoten aus, um ein Kind hinzuzufügen.', 'add-sibling-select-prompt': 'Bitte wählen Sie zuerst einen Knoten aus, um ein Geschwister hinzuzufügen.', 'add-sibling-root-error': 'Ein Geschwister kann nicht zum Stammknoten hinzugefügt werden.', 'delete-select-prompt': 'Bitte wählen Sie zuerst einen Knoten zum Löschen aus.', },
-        };
-
-        // --- Initialization ---
-        function initMindMap() {
-            setLanguage(currentLanguage); // Set initial language (now 'en')
-
-            // --- 修改点: 创建默认导图 ---
-            // Get approximate center based on initial container size
-            const initialCenterX = container.offsetWidth / 2;
-            const initialCenterY = container.offsetHeight / 2;
-
-            // Create root node (ID 0)
-            const rootId = createNode("Central Topic", initialCenterX, initialCenterY);
-
-            // Create child nodes relative to center (adjust offsets as needed)
-            const child1Id = createNode("Branch 1", initialCenterX + NODE_SPACING_X + 50, initialCenterY - NODE_SPACING_Y, rootId);
-            const child2Id = createNode("Branch 2", initialCenterX + NODE_SPACING_X + 50, initialCenterY + NODE_SPACING_Y, rootId);
-
-            // Select the root node initially
-            selectNode(rootId);
-            // --- 修改结束 ---
-
-            // Ensure all connectors are drawn for the default map
-            redrawAllConnectors(); // Call this after creating all default nodes
-
-            resetView(); // Center the view on the default map
-            setupEventListeners(); // Set up interactions
-        }
-
-        // --- Language Switching ---
-        function setLanguage(langCode) { /* ... unchanged ... */
-             if (!translations[langCode]) { console.warn(`Language ${langCode} not found, defaulting to en.`); langCode = 'en'; }
-             currentLanguage = langCode; const currentTranslations = translations[currentLanguage];
-             document.querySelectorAll('[data-translate-key]').forEach(element => {
-                 const key = element.getAttribute('data-translate-key');
-                 if (currentTranslations[key]) { if (element.tagName === 'SPAN') { element.textContent = currentTranslations[key]; } }
-             });
-              const elementsToTranslateTitle = {
-                  'add-child-btn': 'add-child-btn-title', 'add-sibling-btn': 'add-sibling-btn-title',
-                  'delete-node-btn': 'delete-node-btn-title', 'optimize-layout-btn': 'optimize-layout-btn-title',
-                  'import-json-btn': 'import-json-btn-title', 'export-json-btn': 'export-json-btn-title',
-                  'zoom-out-btn': 'zoom-out-btn-title', 'zoom-in-btn': 'zoom-in-btn-title',
-                  'reset-view-btn': 'reset-view-btn-title',
-              };
-              for (const id in elementsToTranslateTitle) {
-                  const element = document.getElementById(id); const key = elementsToTranslateTitle[id];
-                  if (element && currentTranslations[key]) { element.title = currentTranslations[key]; }
-              }
-             if (langSwitcherText && currentTranslations['lang-switcher-text']) { langSwitcherText.textContent = currentTranslations['lang-switcher-text']; }
-             langDropdownMenu.classList.remove('show');
-         }
-
-        function getTranslatedString(key) { /* ... unchanged ... */
-             return translations[currentLanguage]?.[key] || key;
-         }
-
-        // --- Node Management (and other functions unchanged) ---
-        function createNodeElement(id, text) { /* ... unchanged ... */
-            const nodeDiv = document.createElement('div'); nodeDiv.id = `node-${id}`; nodeDiv.className = 'node absolute bg-white border border-gray-300 rounded-lg shadow-md p-2 text-center pointer-events-auto transform-origin-center'; const textSpan = document.createElement('span'); textSpan.className = 'node-text block'; textSpan.textContent = text; textSpan.contentEditable = 'false'; textSpan.dataset.nodeId = id; nodeDiv.appendChild(textSpan); nodesContainer.appendChild(nodeDiv); nodeDiv.addEventListener('dblclick', (e) => { e.stopPropagation(); if (selectedNodeId === id) enableEditing(id); else selectNode(id); }); nodeDiv.addEventListener('click', (e) => { e.stopPropagation(); selectNode(id); }); nodeDiv.addEventListener('mousedown', startDrag); nodeDiv.addEventListener('selectstart', (e) => e.preventDefault()); return nodeDiv;
-         }
-        function createNode(text, x_center, y_center, parentId = null, existingId = null) { /* ... unchanged ... */
-            const id = existingId !== null ? existingId : nextNodeId++; if (existingId !== null && existingId >= nextNodeId) { nextNodeId = existingId + 1; } const nodeElement = createNodeElement(id, text); const nodeWidth = nodeElement.offsetWidth || 80; const nodeHeight = nodeElement.offsetHeight || 36; const initialX = x_center - nodeWidth / 2; const initialY = y_center - nodeHeight / 2; nodeElement.style.left = `${initialX}px`; nodeElement.style.top = `${initialY}px`; nodes[id] = { id: id, text: text, x: initialX, y: initialY, width: nodeWidth, height: nodeHeight, parentId: parentId, childrenIds: [], element: nodeElement, connectorElement: null }; if (parentId !== null && nodes[parentId]) { nodes[parentId].childrenIds.push(id); drawConnector(parentId, id); } return id;
-         }
-        function deleteNode(id) { /* ... unchanged ... */
-             if (id === 0 && nodes[0] && nodes[0].childrenIds.length > 0) { console.warn(getTranslatedString('delete-root-warn')); return; }
-            const node = nodes[id]; if (!node) return; [...node.childrenIds].forEach(childId => deleteNode(childId)); if (node.connectorElement && connectorsGroup.contains(node.connectorElement)) { connectorsGroup.removeChild(node.connectorElement); } if (node.element && nodesContainer.contains(node.element)) { nodesContainer.removeChild(node.element); } if (node.parentId !== null && nodes[node.parentId]) { const parent = nodes[node.parentId]; parent.childrenIds = parent.childrenIds.filter(childId => childId !== id); } delete nodes[id];
-            if (selectedNodeId === id) { const parentId = node.parentId; let newSelectedId = null; if (parentId !== null && nodes[parentId]) { newSelectedId = parentId; } else { const potentialRoot = Object.values(nodes).find(n => n.parentId === null); if (potentialRoot) { newSelectedId = potentialRoot.id; } } if (newSelectedId === null && Object.keys(nodes).length === 0) { nextNodeId = 0; } selectedNodeId = newSelectedId; highlightNode(selectedNodeId); }
-         }
-        function updateNodeText(id, newText) { /* ... unchanged ... */ const node = nodes[id]; if (!node || !node.element) return; node.text = newText; const textSpan = node.element.querySelector('.node-text'); textSpan.textContent = newText; node.width = node.element.offsetWidth; node.height = node.element.offsetHeight; redrawConnectors(id); }
-         function enableEditing(id) { /* ... unchanged ... */
-            const node = nodes[id]; if (!node || !node.element) return; const textSpan = node.element.querySelector('.node-text'); if (!textSpan) return; textSpan.contentEditable = 'true'; textSpan.focus(); const range = document.createRange(); range.selectNodeContents(textSpan); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-            const finishEditing = () => { textSpan.contentEditable = 'false'; const newText = textSpan.textContent.trim() || "Untitled"; if (newText !== node.text) updateNodeText(id, newText); textSpan.removeEventListener('blur', finishEditing); textSpan.removeEventListener('keydown', handleEditKeyDown); };
-            const handleEditKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); finishEditing(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); textSpan.textContent = node.text; finishEditing(); } };
-            textSpan.addEventListener('blur', finishEditing); textSpan.addEventListener('keydown', handleEditKeyDown);
-          }
-        function selectNode(id) { /* ... unchanged ... */ if (selectedNodeId === id) return; highlightNode(null); selectedNodeId = id; highlightNode(id); }
-        function highlightNode(id) { /* ... unchanged ... */ const previouslySelectedNode = nodes[selectedNodeId]; if (previouslySelectedNode && previouslySelectedNode.element) { previouslySelectedNode.element.classList.remove('border-blue-500', 'ring-2', 'ring-blue-300'); previouslySelectedNode.element.classList.add('border-gray-300'); } const nodeToHighlight = id !== null ? nodes[id] : null; if (nodeToHighlight && nodeToHighlight.element) { nodeToHighlight.element.classList.remove('border-gray-300'); nodeToHighlight.element.classList.add('border-blue-500', 'ring-2', 'ring-blue-300'); } }
-        function updateNodePosition(id, newX, newY) { /* ... unchanged ... */ const node = nodes[id]; if (!node || !node.element) return; node.x = newX; node.y = newY; node.element.style.left = `${newX}px`; node.element.style.top = `${newY}px`; redrawConnectors(id); }
-        function optimizeLayout() { /* ... unchanged ... */ const rootNode = Object.values(nodes).find(n => n.parentId === null); if (!rootNode) return; layoutSubtree(rootNode.id, 0, 0); redrawAllConnectors(); resetView(); }
-        function layoutSubtree(nodeId, x, y) { /* ... unchanged ... */
-            const node = nodes[nodeId]; if (!node || !node.element) return 0; const nodeHeight = node.height || node.element.offsetHeight; const nodeWidth = node.width || node.element.offsetWidth; updateNodePosition(nodeId, x, y); const childrenIds = node.childrenIds; if (childrenIds.length === 0) return nodeHeight; const childX = x + nodeWidth + NODE_SPACING_X; let currentY = y; let totalChildHeight = 0; const childSubtreeHeights = []; childrenIds.forEach((childId, index) => { const subtreeHeight = layoutSubtree(childId, childX, currentY); childSubtreeHeights.push(subtreeHeight); totalChildHeight += subtreeHeight; if (index < childrenIds.length - 1) totalChildHeight += NODE_SPACING_Y; }); const parentCenterY = y + nodeHeight / 2; currentY = parentCenterY - totalChildHeight / 2; childrenIds.forEach((childId, index) => { const childNode = nodes[childId]; const childNodeHeight = childNode ? (childNode.height || childNode.element.offsetHeight) : 0; if (childNode && childNode.element) { const subtreeHeight = childSubtreeHeights[index]; const nodeY = currentY + subtreeHeight / 2 - childNodeHeight / 2; updateNodePosition(childId, childX, nodeY); currentY += subtreeHeight + NODE_SPACING_Y; } }); return Math.max(nodeHeight, totalChildHeight);
-        }
-        function drawConnector(parentId, childId) { /* ... unchanged ... */
-            const parentNode = nodes[parentId]; const childNode = nodes[childId]; if (!parentNode || !childNode || !parentNode.width || !parentNode.height || !childNode.width || !childNode.height ) { if (parentNode && parentNode.element) { parentNode.width = parentNode.element.offsetWidth; parentNode.height = parentNode.element.offsetHeight; } if (childNode && childNode.element) { childNode.width = childNode.element.offsetWidth; childNode.height = childNode.element.offsetHeight; } if (!parentNode.width || !childNode.width) return; } const parentWidth = parentNode.width; const parentHeight = parentNode.height; const childWidth = childNode.width; const childHeight = childNode.height; const startX = parentNode.x + parentWidth / 2; const startY = parentNode.y + parentHeight / 2; const endX = childNode.x + childWidth / 2; const endY = childNode.y + childHeight / 2; const controlOffset = Math.abs(endX - startX) * 0.5; const c1X = startX + controlOffset; const c1Y = startY; const c2X = endX - controlOffset; const c2Y = endY; const pathData = `M ${startX} ${startY} C ${c1X} ${c1Y}, ${c2X} ${c2Y}, ${endX} ${endY}`; if (childNode.connectorElement) { childNode.connectorElement.setAttribute('d', pathData); } else { const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', pathData); path.setAttribute('class', 'connector'); path.dataset.parentId = parentId; path.dataset.childId = childId; connectorsGroup.appendChild(path); childNode.connectorElement = path; }
-         }
-        function redrawConnectors(nodeId) { /* ... unchanged ... */ const node = nodes[nodeId]; if (!node) return; if (node.parentId !== null && nodes[node.parentId]) drawConnector(node.parentId, nodeId); node.childrenIds.forEach(childId => { if (nodes[childId]) drawConnector(nodeId, childId); }); }
-         function redrawAllConnectors() { /* ... unchanged ... */ Object.values(nodes).forEach(node => { if (node.parentId !== null && nodes[node.parentId]) drawConnector(node.parentId, node.id); }); }
-        function startDrag(e) { /* ... unchanged ... */ if (e.button !== 0) return; if (e.target.classList.contains('node-text') && e.target.contentEditable === 'true') return; const nodeId = parseInt(e.currentTarget.id.replace('node-', '')); if (!nodes[nodeId]) return; draggingNodeId = nodeId; const node = nodes[draggingNodeId]; node.element.classList.add('dragging'); const rect = node.element.getBoundingClientRect(); dragOffsetX = e.clientX - rect.left; dragOffsetY = e.clientY - rect.top; window.addEventListener('mousemove', dragNode); window.addEventListener('mouseup', stopDrag); }
-        function dragNode(e) { /* ... unchanged ... */ if (draggingNodeId === null) return; e.preventDefault(); const newScreenX = e.clientX - dragOffsetX; const newScreenY = e.clientY - dragOffsetY; const containerRect = container.getBoundingClientRect(); const relativeX = newScreenX - containerRect.left - translateX; const relativeY = newScreenY - containerRect.top - translateY; const mapX = relativeX / currentScale; const mapY = relativeY / currentScale; updateNodePosition(draggingNodeId, mapX, mapY); }
-        function stopDrag(e) { /* ... unchanged ... */ if (draggingNodeId !== null) { const node = nodes[draggingNodeId]; if (node && node.element) node.element.classList.remove('dragging'); draggingNodeId = null; window.removeEventListener('mousemove', dragNode); window.removeEventListener('mouseup', stopDrag); } }
-        function startPan(e) { /* ... unchanged ... */ if (e.target !== container && e.target !== svg ) return; if (e.button === 0 && draggingNodeId === null) { isPanning = true; panStartX = e.clientX; panStartY = e.clientY; container.style.cursor = 'grabbing'; window.addEventListener('mousemove', panView); window.addEventListener('mouseup', stopPan); } }
-        function panView(e) { /* ... unchanged ... */ if (!isPanning) return; e.preventDefault(); const dx = e.clientX - panStartX; const dy = e.clientY - panStartY; translateX += dx; translateY += dy; applyTransform(); panStartX = e.clientX; panStartY = e.clientY; }
-        function stopPan(e) { /* ... unchanged ... */ if (isPanning) { isPanning = false; container.style.cursor = 'grab'; window.removeEventListener('mousemove', panView); window.removeEventListener('mouseup', stopPan); } }
-        function zoom(factor, centerX, centerY) { /* ... unchanged ... */ const newScale = Math.max(0.1, Math.min(2, currentScale * factor)); if (newScale === currentScale) return; const containerRect = container.getBoundingClientRect(); const mouseX = centerX - containerRect.left; const mouseY = centerY - containerRect.top; const mapX = (mouseX - translateX) / currentScale; const mapY = (mouseY - translateY) / currentScale; const newTranslateX = mouseX - mapX * newScale; const newTranslateY = mouseY - mapY * newScale; currentScale = newScale; translateX = newTranslateX; translateY = newTranslateY; applyTransform(); updateZoomInput(); }
-        function applyTransform() { /* ... unchanged ... */ const transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`; nodesContainer.style.transform = transform; nodesContainer.style.transformOrigin = '0 0'; connectorsGroup.setAttribute('transform', `translate(${translateX}, ${translateY}) scale(${currentScale})`); }
-        function updateZoomInput() { /* ... unchanged ... */ zoomLevelInput.value = Math.round(currentScale * 100); }
-        function handleZoomInputChange() { /* ... unchanged ... */ const level = parseInt(zoomLevelInput.value); if (!isNaN(level)) { const newScaleTarget = Math.max(10, Math.min(200, level)) / 100; if (newScaleTarget !== currentScale) { const containerRect = container.getBoundingClientRect(); const centerX = containerRect.left + containerRect.width / 2; const centerY = containerRect.top + containerRect.height / 2; const factor = newScaleTarget / currentScale; zoom(factor, centerX, centerY); } } }
-        function resetView() { /* ... unchanged ... */
-             const targetScale = 1; const rootNode = Object.values(nodes).find(n => n.parentId === null);
-             if (rootNode && rootNode.element) { const nodeWidth = rootNode.width || rootNode.element.offsetWidth; const nodeHeight = rootNode.height || rootNode.element.offsetHeight; const rootCenterX = rootNode.x + nodeWidth / 2; const rootCenterY = rootNode.y + nodeHeight / 2; translateX = container.offsetWidth / 2 - rootCenterX * targetScale; translateY = container.offsetHeight / 2 - rootCenterY * targetScale; }
-             else { translateX = container.offsetWidth / 2; translateY = container.offsetHeight / 2; }
-             currentScale = targetScale; applyTransform(); updateZoomInput();
-        }
-        function getNodeJson(nodeId) { /* ... unchanged ... */ const node = nodes[nodeId]; if (!node) return null; const nodeData = { id: node.id, text: node.text, x: node.x, y: node.y, width: node.width, height: node.height, children: [] }; node.childrenIds.forEach(childId => { const childJson = getNodeJson(childId); if (childJson) nodeData.children.push(childJson); }); return nodeData; }
-        function exportToJson() { /* ... unchanged ... */ const rootNode = Object.values(nodes).find(n => n.parentId === null); if (!rootNode) { alert(getTranslatedString('export-no-root')); return; } try { const mindMapJson = getNodeJson(rootNode.id); if (!mindMapJson) { alert(getTranslatedString('export-fail-generate')); return; } const jsonString = JSON.stringify(mindMapJson, null, 2); const blob = new Blob([jsonString], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'mindmap.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); } catch (error) { console.error("导出 JSON 时出错:", error); alert(getTranslatedString('export-fail')); } }
-        function clearMindMap() { /* ... unchanged ... */ nodesContainer.innerHTML = ''; connectorsGroup.innerHTML = ''; nodes = {}; nextNodeId = 0; selectedNodeId = null; draggingNodeId = null; }
-        function buildMapFromJson(nodeData, parentId) { /* ... unchanged ... */
-            let maxId = -1; if (!nodeData || typeof nodeData.id === 'undefined' || !nodeData.text) { console.error("无效的节点数据:", nodeData); return maxId; }
-            const nodeWidth = nodeData.width || 80; const nodeHeight = nodeData.height || 36; const centerX = nodeData.x + nodeWidth / 2; const centerY = nodeData.y + nodeHeight / 2;
-            const newNodeId = createNode(nodeData.text, centerX, centerY, parentId, nodeData.id); const createdNode = nodes[newNodeId]; if (!createdNode) { console.error("创建节点失败:", nodeData); return nodeData.id; }
-            createdNode.x = nodeData.x; createdNode.y = nodeData.y; createdNode.width = nodeWidth; createdNode.height = nodeHeight; createdNode.element.style.left = `${nodeData.x}px`; createdNode.element.style.top = `${nodeData.y}px`;
-            maxId = nodeData.id; if (nodeData.children && Array.isArray(nodeData.children)) { nodeData.children.forEach(childData => { const childMaxId = buildMapFromJson(childData, newNodeId); maxId = Math.max(maxId, childMaxId); }); } return maxId;
-         }
-        function handleFileImport(event) { /* ... unchanged ... */
-            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-            reader.onload = (e) => { const fileContent = e.target.result; try { const jsonData = JSON.parse(fileContent); if (typeof jsonData !== 'object' || jsonData === null || typeof jsonData.id === 'undefined' || typeof jsonData.text === 'undefined') { throw new Error(getTranslatedString('import-invalid-format')); } clearMindMap(); const maxId = buildMapFromJson(jsonData, null); if (nodes[jsonData.id]) { selectNode(jsonData.id); } nextNodeId = maxId + 1; redrawAllConnectors(); resetView(); alert(getTranslatedString('import-success')); } catch (error) { console.error("导入或解析 JSON 时出错:", error); alert(getTranslatedString('import-fail') + error.message); clearMindMap(); } finally { event.target.value = null; } };
-            reader.onerror = (e) => { console.error("读取文件时出错:", e); alert(getTranslatedString('read-file-fail')); event.target.value = null; }; reader.readAsText(file);
-        }
-
-        // --- Event Listeners Setup ---
-        function setupEventListeners() { /* ... unchanged ... */
-            addChildBtn.addEventListener('click', () => { if (selectedNodeId === null) { alert(getTranslatedString('add-child-select-prompt')); if (Object.keys(nodes).length === 0) { const rootId = createNode("Central Topic", container.offsetWidth / 2, container.offsetHeight / 2); selectNode(rootId); enableEditing(rootId); } return; } const parentNode = nodes[selectedNodeId]; if (!parentNode || !parentNode.element) return; const parentWidth = parentNode.width || parentNode.element.offsetWidth; const newNodeX = parentNode.x + parentWidth + NODE_SPACING_X; const newNodeY = parentNode.y; const newId = createNode("New Node", newNodeX + 40, newNodeY + 18, selectedNodeId); selectNode(newId); enableEditing(newId); });
-            addSiblingBtn.addEventListener('click', () => { if (selectedNodeId === null) { alert(getTranslatedString('add-sibling-select-prompt')); return; } if (nodes[selectedNodeId]?.parentId === null) { alert(getTranslatedString('add-sibling-root-error')); return; } const siblingNode = nodes[selectedNodeId]; const parentId = siblingNode.parentId; if (!nodes[parentId]) return; const anchorNode = siblingNode; const anchorHeight = anchorNode.height || anchorNode.element.offsetHeight; const newNodeX = anchorNode.x; const newNodeY = anchorNode.y + anchorHeight + NODE_SPACING_Y / 2; const newId = createNode("New Node", newNodeX + 40, newNodeY + 18, parentId); selectNode(newId); enableEditing(newId); });
-            deleteNodeBtn.addEventListener('click', () => { if (selectedNodeId === null) { alert(getTranslatedString('delete-select-prompt')); return; } const nodeToDelete = nodes[selectedNodeId]; if (nodeToDelete.parentId === null && nodeToDelete.childrenIds.length > 0) { alert(getTranslatedString('delete-root-warn')); return; } deleteNode(selectedNodeId); });
-            optimizeLayoutBtn.addEventListener('click', optimizeLayout); exportJsonBtn.addEventListener('click', exportToJson); importJsonBtn.addEventListener('click', () => { importFileInput.click(); }); importFileInput.addEventListener('change', handleFileImport);
-            zoomInBtn.addEventListener('click', () => { const containerRect = container.getBoundingClientRect(); zoom(1.2, containerRect.left + containerRect.width / 2, containerRect.top + containerRect.height / 2); }); zoomOutBtn.addEventListener('click', () => { const containerRect = container.getBoundingClientRect(); zoom(1 / 1.2, containerRect.left + containerRect.width / 2, containerRect.top + containerRect.height / 2); }); zoomLevelInput.addEventListener('change', handleZoomInputChange); resetViewBtn.addEventListener('click', resetView);
-            langSwitcherBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdownMenu.classList.toggle('show'); });
-            langDropdownMenu.querySelectorAll('a[data-lang]').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const lang = e.currentTarget.getAttribute('data-lang'); setLanguage(lang); }); });
-             document.addEventListener('click', (e) => { if (!langSwitcherBtn.contains(e.target) && !langDropdownMenu.contains(e.target)) { langDropdownMenu.classList.remove('show'); } });
-            container.addEventListener('wheel', (e) => { e.preventDefault(); const delta = e.deltaY > 0 ? 1 / 1.1 : 1.1; zoom(delta, e.clientX, e.clientY); }, { passive: false }); container.addEventListener('mousedown', startPan); container.style.cursor = 'grab';
-            document.addEventListener('keydown', (e) => { const activeEl = document.activeElement; const isEditing = activeEl && (activeEl.isContentEditable || activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA'); if (!isEditing && selectedNodeId !== null) { switch (e.key) { case 'Tab': e.preventDefault(); addChildBtn.click(); break; case 'Enter': e.preventDefault(); addSiblingBtn.click(); break; case 'Delete': case 'Backspace': if (nodes[selectedNodeId]) { e.preventDefault(); deleteNodeBtn.click(); } break; case 'F2': if (nodes[selectedNodeId]) { e.preventDefault(); enableEditing(selectedNodeId); } break; } } if (!isEditing) { switch (e.key) { case '+': case '=': if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomInBtn.click(); } break; case '-': if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomOutBtn.click(); } break; case '0': if (e.ctrlKey || e.metaKey) { e.preventDefault(); resetViewBtn.click(); } break; } } });
-            container.addEventListener('click', (e) => { if (e.target === container || e.target === svg) { selectNode(null); } }); window.addEventListener('resize', () => { resetView(); redrawAllConnectors(); });
-        }
-
-        // --- Start the application ---
-        window.onload = initMindMap;
-
-    </script>
-</body>
-</html>
+{# Optional: Override footer if needed #}
+{% block footer %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 text-center text-gray-500 text-sm">
+    &copy; 2025 思维导图编辑器 (Flask Version)
+</div>
+{% endblock %}
