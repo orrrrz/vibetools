@@ -182,3 +182,10 @@
         margin-top: 20px;
     }
 }
+
+/* 覆盖基础模板的宽度限制 */
+.main-content {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}

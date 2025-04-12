@@ -18,16 +18,11 @@
         "description": "提取PDF文件中的指定页面并创建新的PDF文件"
     },
     {
-        "module_name": "mindmap",
-        "name": "思维导图", 
-        "url": "/tools/mindmap",
-        "description": "在线思维导图"
-    },
-
-    {
         "module_name": "mdeditor",
         "name": "Markdown 编辑器", 
         "url": "/tools/mdeditor",
         "description": "Markdown编辑器"
     }
+
+    
 ]
