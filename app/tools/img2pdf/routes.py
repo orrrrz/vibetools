@@ -127,7 +127,7 @@ def download_pdf(session_id):
         # Return the PDF file
         return send_file(session['pdf_path'], 
                          as_attachment=True, 
-                         download_name='converted_images.pdf')
+                         download_name=session_id + '.pdf')
     except Exception as e:
         logger.error(f"Error downloading PDF: {str(e)}")
         return jsonify({'error': f'Error downloading PDF: {str(e)}'}), 500

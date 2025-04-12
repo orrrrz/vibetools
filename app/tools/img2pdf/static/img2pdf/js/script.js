@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        fetch('/img2pdf/api/cleanup', {
+        fetch('/tools/img2pdf/api/cleanup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
