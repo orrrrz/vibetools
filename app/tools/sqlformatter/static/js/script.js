@@ -125,8 +125,20 @@ ORDER BY u.name ASC, p.title ASC;`;
     });
     
     // Resize CodeMirror instances when window is resized
-    window.addEventListener('resize', function() {
+    function refreshEditors() {
         sqlInput.refresh();
         sqlOutput.refresh();
-    });
+    }
+    
+    window.addEventListener('resize', refreshEditors);
+    
+    // Make sure editors are properly sized after DOM is fully loaded
+    setTimeout(refreshEditors, 100);
+    
+    // Also refresh when any parent element changes size
+    if (window.ResizeObserver) {
+        const containerElement = document.querySelector('.sql-formatter-container');
+        const resizeObserver = new ResizeObserver(refreshEditors);
+        resizeObserver.observe(containerElement);
+    }
 });

@@ -10,5 +10,4 @@ def index():
         flask.Response: The rendered template for the SQL formatter tool.
     """
     return render_template('sqlformatter/index.html', 
-                          page_title='SQL 格式化工具 - 氛围工具店',
-                          header_title='SQL 格式化工具')
+                          subheader_title='/ SQL 格式化工具')

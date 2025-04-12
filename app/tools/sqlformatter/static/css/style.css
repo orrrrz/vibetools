@@ -4,8 +4,10 @@
     display: flex;
     flex-direction: row;
     gap: 20px;
-    height: 500px;
+    height: calc(100vh - 250px);
+    min-height: 500px;
     margin-bottom: 20px;
+    width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -17,6 +19,7 @@
     .sql-editor-container, 
     .sql-result-container {
         height: 300px;
+        width: 100%;
     }
 }
 
