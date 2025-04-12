@@ -12,10 +12,7 @@
 {% endblock %}
 
 {% block header_right %}
-{# Example: Add the download button #}
-<button id="download-btn" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-    下载
-</button>
+{# Remove download button from here #}
 {% endblock %}
 {# --- End of assumed header blocks --- #}
 
@@ -109,7 +106,10 @@
                         <option value="webp">WebP</option>
                         <option value="gif">GIF</option>
                     </select>
-                    <button id="convert-format-btn" class="w-full text-xs px-3 py-1 border border-transparent rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">转换</button>
+                    <button id="convert-format-btn" class="w-full text-xs px-3 py-1 border border-transparent rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mb-2">转换</button>
+                    <button id="download-btn" class="hidden w-full text-xs px-3 py-1 border border-transparent rounded shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        下载
+                    </button>
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@
     {# Right Column: Preview (md:w-3/4 corresponds roughly to col-md-9) #}
     <div class="w-full md:w-3/4">
         <div class="bg-white p-4 rounded-lg shadow h-full">
-            <h3 class="text-lg font-semibold border-b pb-2 mb-3">图片预览</h3>
+            <!-- <h3 class="text-lg font-semibold border-b pb-2 mb-3">图片预览</h3> -->
             <div id="preview-container" class="flex items-center justify-center h-[calc(100%-40px)]"> {# Adjust height calculation as needed #}
                 {# Prompt shown initially #}
                 <div id="upload-prompt" class="text-center">

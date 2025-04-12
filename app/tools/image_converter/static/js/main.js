@@ -342,6 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add cache-busting query parameter to force image reload
                 showImage(data.url + '?t=' + new Date().getTime());
                 updateImageInfo(data); // Update displayed info
+
+                document.getElementById('download-btn').classList.remove('hidden');
             } else {
                 showError(data.error || '处理图片失败');
             }
