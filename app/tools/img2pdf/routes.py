@@ -13,7 +13,7 @@ from . import img2pdf_bp
 logger = logging.getLogger(__name__)
 
 # Temporary directory for uploads
-TEMP_DIR = os.path.join(tempfile.gettempdir(), 'img2pdf_uploads')
+TEMP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'uploads/img2pdf/images'))
 if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
 
