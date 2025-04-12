@@ -28,5 +28,11 @@
     "name": "JSON 格式化",
     "url": "/tools/jsonformatter",
     "description": "JSON格式化工具"
+  },
+  {
+    "module_name": "sqlformatter",
+    "name": "SQL 格式化",
+    "url": "/tools/sqlformatter",
+    "description": "SQL格式化工具"
   }
 ]
