@@ -1,0 +1,198 @@
+/* JSON Formatter Styles */
+.json-formatter-container {
+    display: flex;
+    gap: 20px;
+    height: calc(80vh - 150px);
+    min-height: 400px;
+}
+
+.source-container, .result-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.editor-header, .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#jsonInput {
+    flex: 1;
+    resize: none;
+    border: none;
+    padding: 15px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    background-color: #f8f9fa;
+    white-space: pre;
+    overflow-y: auto;
+}
+
+.json-output {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: white;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background-color: white;
+    color: #374151;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.action-button:hover {
+    background-color: #f3f4f6;
+}
+
+.action-button:active {
+    background-color: #e5e7eb;
+}
+
+.result-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* JSON Tree Node Styles */
+.json-tree {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.json-tree ul {
+    margin-left: 20px;
+    padding: 0;
+    list-style-type: none;
+}
+
+.json-tree li {
+    margin: 3px 0;
+    position: relative;
+}
+
+.json-key {
+    color: #881280;
+    font-weight: bold;
+}
+
+.json-string {
+    color: #618043;
+}
+
+.json-number {
+    color: #1a4789;
+}
+
+.json-boolean {
+    color: #1a4789;
+    font-weight: bold;
+}
+
+.json-null {
+    color: #777;
+    font-style: italic;
+}
+
+.collapsible {
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible::before {
+    content: '▼';
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.collapsible.collapsed::before {
+    transform: rotate(-90deg);
+}
+
+.collapsible-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+}
+
+.json-brace, .json-bracket, .json-colon, .json-comma {
+    color: #333;
+}
+
+.copy-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4b5563;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.status-message {
+    margin-top: 15px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    transition: opacity 0.3s ease;
+}
+
+.status-message.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #f87171;
+}
+
+.status-message.success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .json-formatter-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .source-container, .result-container {
+        height: 400px;
+    }
+}

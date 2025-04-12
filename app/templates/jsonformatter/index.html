@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-semibold mb-4">JSON 格式化工具</h2>
+    <div class="json-formatter-container">
+        <div class="source-container">
+            <div class="editor-header">
+                <h3 class="text-lg font-medium">JSON 源码</h3>
+                <button id="clearButton" class="action-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                    清空
+                </button>
+            </div>
+            <textarea id="jsonInput" placeholder="请在这里粘贴您的 JSON 代码..."></textarea>
+        </div>
+        <div class="result-container">
+            <div class="result-header">
+                <h3 class="text-lg font-medium">格式化结果</h3>
+                <div class="result-actions">
+                    <button id="expandAllButton" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8zM7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708l2-2zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10z"/>
+                        </svg>
+                        全部展开
+                    </button>
+                    <button id="collapseAllButton" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8zM7.646 4.646a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.207l-1.146 1.147a.5.5 0 0 1-.708-.708l2-2zM8 11a.5.5 0 0 1-.5-.5V6.707l-1.146 1.147a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-.5.5z"/>
+                        </svg>
+                        全部折叠
+                    </button>
+                    <button id="copyButton" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                        </svg>
+                        复制
+                    </button>
+                </div>
+            </div>
+            <div id="jsonOutput" class="json-output"></div>
+        </div>
+    </div>
+    <div id="statusMessage" class="status-message hidden"></div>
+</div>
+{% endblock %}
+
+{% block header_left %}
+<a href="{{ url_for('main.index') }}" class="flex items-center">
+    <span class="text-xl font-semibold text-gray-700">氛围工具店</span>
+</a>
+<span class="mx-2 text-gray-400">|</span>
+<span class="text-gray-700">JSON 格式化工具</span>
+{% endblock %}
+
+{% block header_right %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('jsonformatter.static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('jsonformatter.static', filename='js/script.js') }}"></script>
+{% endblock %}

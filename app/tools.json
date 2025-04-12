@@ -1,28 +1,32 @@
 [
-    {
-        "module_name": "image_converter",
-        "name": "图片编辑", 
-        "url": "/tools/image_converter",
-        "description": "图片大小调整、格式转换、旋转等"
-    },
-    {
-        "module_name": "img2pdf",
-        "name": "图片打印", 
-        "url": "/tools/img2pdf",
-        "description": "将多张图片转换成PDF文件"
-    },
-    {
-        "module_name": "pdfpick",
-        "name": "PDF页面提取", 
-        "url": "/tools/pdfpick",
-        "description": "提取PDF文件中的指定页面并创建新的PDF文件"
-    },
-    {
-        "module_name": "mdeditor",
-        "name": "Markdown 编辑器", 
-        "url": "/tools/mdeditor",
-        "description": "Markdown编辑器"
-    }
-
-    
+  {
+    "module_name": "image_converter",
+    "name": "图片编辑",
+    "url": "/tools/image_converter",
+    "description": "图片大小调整、格式转换、旋转等"
+  },
+  {
+    "module_name": "img2pdf",
+    "name": "图片打印",
+    "url": "/tools/img2pdf",
+    "description": "将多张图片转换成PDF文件"
+  },
+  {
+    "module_name": "pdfpick",
+    "name": "PDF页面提取",
+    "url": "/tools/pdfpick",
+    "description": "提取PDF文件中的指定页面并创建新的PDF文件"
+  },
+  {
+    "module_name": "mdeditor",
+    "name": "Markdown 编辑器",
+    "url": "/tools/mdeditor",
+    "description": "Markdown编辑器"
+  },
+  {
+    "module_name": "jsonformatter",
+    "name": "JSON 格式化",
+    "url": "/tools/jsonformatter",
+    "description": "JSON格式化工具"
+  }
 ]
