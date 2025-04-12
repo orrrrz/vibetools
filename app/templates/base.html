@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/VT323/1.0/VT323-Regular.css" rel="stylesheet">
     <title>{{ page_title | default('梁记氛围工具店') }}</title>
     <style>
         /* Apply Inter font globally if loaded */
@@ -16,6 +17,52 @@
         /* Ensure main content area takes available height */
         .main-content {
             min-height: calc(100vh - 8rem); /* Adjust based on header/footer height */
+        }
+        
+        /* 走马灯广告样式 */
+        .marquee-container {
+            height: 30px;
+            /* background-color: #333; */
+            position: relative;
+            overflow: hidden;
+            /* border: 2px solid #444; */
+            /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.5) inset; */
+            image-rendering: pixelated;
+            border-radius: 4px;
+            flex-grow: 1;
+            margin: 0 1rem;
+        }
+
+        .marquee-text {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'VT323', monospace;
+            letter-spacing: 1px;
+            line-height: 30px;
+            background-image: linear-gradient(to right, 
+                #FF0000, #FF7F00, #FFFF00, #00FF00, 
+                #0000FF, #4B0082, #9400D3, #FF0000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 600px 100%;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+            will-change: transform;
+        }
+
+        /* 像素背景效果 */
+        .pixel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='2' height='2' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='rgba(0,0,0,0.1)'/%3E%3C/svg%3E");
+            background-size: 2px 2px;
+            pointer-events: none;
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -33,6 +80,12 @@
                     {% block subheader_left %}
                     <span class="ml-2"> 首页 </span>
                     {% endblock %}
+                </div>
+                
+                <!-- 走马灯广告 -->
+                <div class="marquee-container">
+                    <div id="marquee" class="marquee-text">欢迎光临梁记氛围工具店！本店所有工具均非手工打造，请放心使用！</div>
+                    <div class="pixel-overlay"></div>
                 </div>
 
                 <div class="hidden md:block">
@@ -62,5 +115,53 @@
         </div>
     </footer>
 
+    <script>
+        // 走马灯广告脚本
+        const marquee = document.getElementById('marquee');
+        let startPos = document.querySelector('.marquee-container').offsetWidth;
+        let animationId;
+        let speed = 1.5;
+
+        // 设置初始位置
+        marquee.style.transform = `translateX(${startPos}px)`;
+
+        function animate() {
+            startPos -= speed;
+            // 当文字完全移出屏幕左侧，重置位置到右侧
+            if (startPos < -marquee.offsetWidth) {
+                startPos = document.querySelector('.marquee-container').offsetWidth;
+            }
+            marquee.style.transform = `translateX(${startPos}px)`;
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // 开始动画
+        animate();
+
+        // 响应窗口大小变化
+        window.addEventListener('resize', function() {
+            const containerWidth = document.querySelector('.marquee-container').offsetWidth;
+            if (startPos < 0 && startPos > -marquee.offsetWidth) {
+                // 保持相对位置
+            } else {
+                startPos = containerWidth;
+            }
+        });
+
+        // 点击切换消息
+        document.querySelector('.marquee-container').addEventListener('click', function() {
+            const messages = [
+                "欢迎光临梁记氛围工具店！",
+                "本店所有工具均非手工打造，欢迎使用！",
+            ];
+            const currentMsg = marquee.textContent;
+            let newMsg;
+            do {
+                newMsg = messages[Math.floor(Math.random() * messages.length)];
+            } while (newMsg === currentMsg);
+            
+            marquee.textContent = newMsg;
+        });
+    </script>
 </body>
 </html>
