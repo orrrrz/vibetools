@@ -33,12 +33,7 @@ touch app/tools/$module_name/static/css/style.css
 mkdir -p app/templates/$module_name
 touch app/templates/$module_name/index.html
 
-jq --argjson new_object '{
-    "module_name": "$module_name",
-    "name": "$module_name",
-    "url": "/tools/$module_name",
-    "description": ""
-}' '. += [$new_object]' app/tools.json > temp.json && mv temp.json app/tools.json
+jq --arg module_name "$module_name" '. += [{"module_name": $module_name, "name": $module_name, "url": "/tools/\($module_name)", "description": ""}]' app/tools.json > temp.json && mv temp.json app/tools.json
 
 echo "Tool added to app/tools.json. Please update details in app/tools.json."
 
