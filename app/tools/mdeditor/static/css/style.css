@@ -1,195 +1,184 @@
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.navbar {
-    flex-shrink: 0;
-}
-
-.container-fluid {
-    flex-grow: 1;
-    display: flex;
-    overflow: hidden;
-}
-
-.row {
-    width: 100%;
-    height: calc(100vh - 56px);
-    margin: 0;
-    overflow: hidden;
-}
-
-#editor-container, #preview-container {
-    height: 100%;
-    padding: 0;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.editor-header, .preview-header {
-    height: 40px;
-    border-bottom: 1px solid #ddd;
-    background-color: #f8f9fa;
-    padding: 0 10px;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.editor-header {
-    display: flex;
-    align-items: center;
-}
-
-.preview-header {
-    display: none;
-}
-
-#doc-title {
-    flex: 1;
-    height: 40px;
-    border: none;
-    padding: 0 15px;
-    background-color: transparent;
-}
-
+/* 编辑器样式 */
 #editor {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    line-height: 1.6;
+    tab-size: 4;
+}
+
+/* 预览区域样式 */
+.markdown-preview {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.markdown-preview h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.markdown-preview h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.markdown-preview h3 {
+    font-size: 1.25em;
+}
+
+.markdown-preview h4 {
+    font-size: 1em;
+}
+
+.markdown-preview h5 {
+    font-size: 0.875em;
+}
+
+.markdown-preview h6 {
+    font-size: 0.85em;
+    color: #6a737d;
+}
+
+.markdown-preview p {
+    margin-top: 0;
+    margin-bottom: 1em;
+}
+
+.markdown-preview a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.markdown-preview a:hover {
+    text-decoration: underline;
+}
+
+.markdown-preview blockquote {
+    margin: 0;
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+}
+
+.markdown-preview pre {
+    margin-top: 0;
+    margin-bottom: 1em;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: 3px;
+}
+
+.markdown-preview code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 85%;
+    background-color: rgba(27, 31, 35, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+.markdown-preview pre code {
+    background-color: transparent;
+    padding: 0;
+    font-size: 100%;
+    white-space: pre;
+}
+
+.markdown-preview table {
+    border-collapse: collapse;
     width: 100%;
-    height: calc(100% - 40px);
-    border: none;
-    resize: none;
-    padding: 15px;
-    font-family: monospace;
-    font-size: 14px;
-    line-height: 1.5;
-    overflow-y: scroll;
-    flex: 1;
-    box-sizing: border-box;
+    margin-bottom: 1em;
+    overflow: auto;
 }
 
-#preview {
-    height: 100%;
-    padding: 15px;
-    overflow-y: auto;
-    border-left: 1px solid #ddd;
-    background-color: #f9f9f9;
-    flex: 1;
-    box-sizing: border-box;
+.markdown-preview table th,
+.markdown-preview table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
 }
 
-.toc {
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 20px;
+.markdown-preview table tr {
+    background-color: #fff;
+    border-top: 1px solid #c6cbd1;
 }
 
-.toc ul {
-    margin-bottom: 0;
+.markdown-preview table tr:nth-child(2n) {
+    background-color: #f6f8fa;
 }
 
-pre {
-    background-color: #f5f5f5;
-    border-radius: 5px;
-    padding: 10px;
+.markdown-preview table th {
+    font-weight: 600;
 }
 
-code {
-    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+.markdown-preview hr {
+    height: 0.25em;
+    padding: 0;
+    margin: 24px 0;
+    background-color: #e1e4e8;
+    border: 0;
 }
 
-.saving {
-    color: #ffc107;
+.markdown-preview ul,
+.markdown-preview ol {
+    padding-left: 2em;
+    margin-top: 0;
+    margin-bottom: 1em;
 }
 
-.saved {
-    color: #28a745;
+.markdown-preview li + li {
+    margin-top: 0.25em;
 }
 
-/* Theme styles */
-.theme-dark #preview {
-    background-color: #282c34;
-    color: #abb2bf;
+/* 数学公式错误样式 */
+.katex-error {
+    color: #f00;
+    background-color: #fdd;
+    padding: 2px;
+    border-radius: 2px;
 }
 
-.theme-dark .preview-header {
-    background-color: #21252b;
-    border-color: #181a1f;
+/* 自定义滚动条 */
+#editor::-webkit-scrollbar,
+.markdown-preview::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-.theme-dark pre {
-    background-color: #21252b;
+#editor::-webkit-scrollbar-track,
+.markdown-preview::-webkit-scrollbar-track {
+    background: #f1f1f1;
 }
 
-.theme-solarized #preview {
-    background-color: #fdf6e3;
-    color: #657b83;
+#editor::-webkit-scrollbar-thumb,
+.markdown-preview::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
 }
 
-.theme-nord #preview {
-    background-color: #2e3440;
-    color: #d8dee9;
+#editor::-webkit-scrollbar-thumb:hover,
+.markdown-preview::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
-.theme-nord pre {
-    background-color: #3b4252;
+/* 响应式布局调整 */
+@media (max-width: 768px) {
+    .markdown-preview {
+        margin-top: 20px;
+    }
 }
-
-/* Immersive mode */
-.immersive-mode #preview-container {
-    display: none;
-}
-
-.immersive-mode #editor-container {
-    width: 100%;
-    max-width: 100%;
-    flex: 0 0 100%;
-}
-
-/* Folded editor */
-.folded .navbar-brand:nth-child(2),
-.folded .navbar .navbar-nav {
-    display: none;
-}
-
-.folded .navbar {
-    min-height: 30px;
-    height: 30px;
-}
-
-.folded .row {
-    height: calc(100vh - 30px);
-}
-
-.folded .navbar-brand {
-    font-size: 0.9rem;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.folded .container-fluid {
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-/* Dropdown submenu styles */
-.dropdown-submenu {
-    position: relative;
-}
-
-.dropdown-submenu .dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -1px;
-}
-
-.dropdown-submenu:hover > .dropdown-menu {
-    display: block;
-} 
