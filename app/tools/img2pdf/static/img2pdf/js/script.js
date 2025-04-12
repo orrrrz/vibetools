@@ -212,9 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add event to clean up after download
                 downloadPdfBtn.addEventListener('click', function() {
                     // Schedule cleanup after download starts
-                    setTimeout(function() {
-                        cleanup();
-                    }, 3000);
+                    // setTimeout(function() {
+                    //     cleanup();
+                    // }, 3000);
                 });
             } else {
                 showError(data.error || 'PDF生成失败');
@@ -227,28 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Clean up resources
-    function cleanup() {
-        if (!currentSessionId) {
-            return;
-        }
-        
-        fetch('/tools/img2pdf/api/cleanup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                session_id: currentSessionId
-            })
-        })
-        .then(() => {
-            currentSessionId = null;
-        })
-        .catch(error => {
-            console.error('Cleanup error:', error);
-        });
-    }
     
     // Helper functions
     function showError(msg) {
@@ -280,5 +258,5 @@ function hideElement(el) {
 }
     
     // Handle page unload to clean up
-    window.addEventListener('beforeunload', cleanup);
+    // window.addEventListener('beforeunload', cleanup);
 }); 
