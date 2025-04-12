@@ -5,12 +5,7 @@
 {% endblock %}
 
 {% block header_right %}
-<div class="flex items-center space-x-4">
-    <button id="btn-new" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition">新建</button>
-    <button id="btn-import" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition">导入</button>
-    <button id="btn-export" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition">导出</button>
-    <span id="save-status" class="text-sm text-gray-500">已保存</span>
-</div>
+
 {% endblock %}
 
 {% block content %}
@@ -19,9 +14,14 @@
         <!-- 左侧编辑器 -->
         <div class="md:w-1/2 w-full h-full flex flex-col">
             <div class="bg-white p-3 mb-2 rounded-lg shadow flex justify-between items-center">
-                <h3 class="text-md font-medium">编辑区</h3>
+                <div class="flex items-center space-x-4">
+                    <button id="btn-new" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition">新建</button>
+                    <button id="btn-import" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition">导入</button>
+                    <button id="btn-export" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition">导出</button>
+                    <span id="save-status" class="text-sm text-gray-500">已保存</span>
+                </div>
                 <div>
-                    <input type="text" id="doc-title" placeholder="文档标题" class="px-2 py-1 border rounded text-sm">
+                    <input type="text" id="doc-title" placeholder="文档标题" class="px-2 py-1 border rounded text-sm"><span id="doc-suffix">.md</span>
                 </div>
             </div>
             <div class="flex-grow bg-white rounded-lg shadow overflow-hidden">
@@ -31,9 +31,9 @@
         
         <!-- 右侧预览 -->
         <div class="md:w-1/2 w-full h-full flex flex-col">
-            <div class="bg-white p-3 mb-2 rounded-lg shadow">
+            <!-- <div class="bg-white p-3 mb-2 rounded-lg shadow">
                 <h3 class="text-md font-medium">预览区</h3>
-            </div>
+            </div> -->
             <div class="flex-grow bg-white rounded-lg shadow overflow-auto">
                 <div id="preview" class="markdown-preview p-4"></div>
             </div>
