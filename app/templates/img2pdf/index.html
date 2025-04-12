@@ -15,6 +15,7 @@
 {% block content %}
 {# Link to custom CSS for this specific tool (if needed) #}
 <link rel="stylesheet" href="{{ url_for('img2pdf.static', filename='img2pdf/css/style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/heic2any"></script>
 
 {# Main container for the tool - uses Tailwind classes now #}
 <div class="bg-white p-6 rounded-lg shadow">
@@ -50,20 +51,25 @@
     </div>
 
     {# Image Preview Container - initially hidden #}
+    {# Image Preview Container #}
     <div id="imagePreviewContainer" class="mt-6 hidden">
         <h3 class="text-xl font-semibold mb-4">图片预览</h3>
         {# Preview images will be added here by JS, using Tailwind grid #}
         <div id="imagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
-            {# Example preview item structure (JS will generate these)
-            <div class="relative group">
-                <img src="..." alt="Preview" class="w-full h-auto rounded-md object-cover aspect-square">
-                <button class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
-            </div>
+            {# JS will generate items like this:
+             <div class="relative group aspect-square"> // Column container
+                 <div class="image-preview-item w-full h-full"> // Inner container for content
+                     <img src="..." alt="..." class="w-full h-full rounded-md object-cover">
+                     <div class="image-preview-caption ...">...</div>
+                     <button class="image-preview-remove ...">&times;</button>
+                 </div>
+             </div>
             #}
         </div>
-        <div class="mt-6">
-            <button id="generatePdfBtn"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        {# Generate Button is now inside its own container for easier show/hide #}
+        <div class="mt-6"> {# This div wraps the Generate button #}
+            <button id="generatePdfBtn" disabled {# Disabled initially #}
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
                 生成PDF
             </button>
         </div>
