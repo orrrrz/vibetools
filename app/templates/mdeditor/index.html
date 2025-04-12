@@ -1,13 +1,7 @@
 {% extends "base.html" %}
 
-{% block header_left %}
-<a href="{{ url_for('mdeditor.index') }}" class="flex items-center">
-    <span class="text-xl font-semibold text-gray-700">梁记 Markdown 编辑器</span>
-</a>
-{% endblock %}
-
 {% block subheader_left %}
-<span class="ml-2">专注写作，实时渲染</span>
+<span class="ml-2">/ Markdown Editor</span>
 {% endblock %}
 
 {% block header_right %}
@@ -71,6 +65,3 @@
 <script src="{{ url_for('mdeditor.static', filename='js/main.js') }}"></script>
 {% endblock %}
 
-{% block footer %}
-&copy; 2025 梁记 Markdown 编辑器 - 让写作更简单
-{% endblock %}

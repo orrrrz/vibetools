@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/VT323/1.0/VT323-Regular.css" rel="stylesheet">
-    <title>{{ page_title | default('梁记氛围工具店') }}</title>
+    <title>{{ page_title | default('氛围工具店') }}</title>
     <style>
         /* Apply Inter font globally if loaded */
         body {
@@ -74,17 +74,16 @@
                 <div class="flex-shrink-0 flex items-center">
                     {% block header_left %}
                     <a href="{{ url_for("main.index") }}" class="flex items-center">
-                        <span class="text-xl font-semibold text-gray-700">{{ header_title | default('梁记氛围工具店') }}</span>
+                        <span class="text-xl font-semibold text-gray-700">{{ header_title | default('氛围工具店') }}</span>
                     </a>
                     {% endblock %}
                     {% block subheader_left %}
-                    <span class="ml-2"> 首页 </span>
                     {% endblock %}
                 </div>
                 
                 <!-- 走马灯广告 -->
                 <div class="marquee-container">
-                    <div id="marquee" class="marquee-text">欢迎光临梁记氛围工具店！本店所有工具均非手工打造，请放心使用！</div>
+                    <div id="marquee" class="marquee-text">欢迎光临氛围工具店！本店所有工具均非手工打造，请放心使用！</div>
                     <div class="pixel-overlay"></div>
                 </div>
 
@@ -110,7 +109,8 @@
     <footer class="bg-gray-100 border-t border-gray-200 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-gray-500 text-sm">
             {% block footer %}
-            {{ footer_text | default('&copy; ' + "2025" + ' 版权所有。') }}
+            <!-- {{ footer_text | default('&copy; ' + "2025" + ' 版权所有。') }} -->
+            &copy; 2025 氛围工具店 版权所有
             {% endblock %}
         </div>
     </footer>
@@ -151,7 +151,7 @@
         // 点击切换消息
         document.querySelector('.marquee-container').addEventListener('click', function() {
             const messages = [
-                "欢迎光临梁记氛围工具店！",
+                "欢迎光临氛围工具店！",
                 "本店所有工具均非手工打造，欢迎使用！",
             ];
             const currentMsg = marquee.textContent;
