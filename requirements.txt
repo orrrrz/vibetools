@@ -1,1 +1,5 @@
 pillow_heif
+img2pdf
+Pillow
+flask
+PyPDF2
