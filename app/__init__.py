@@ -67,6 +67,7 @@ def _register_tool_blueprints(app: Flask):
 def create_app(config_name):
     """Creates and configures the Flask application."""
     app = Flask(__name__)
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
