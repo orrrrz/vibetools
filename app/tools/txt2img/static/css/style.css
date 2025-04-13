@@ -1,0 +1,42 @@
+/* Add any custom styles needed beyond Tailwind here */
+
+#canvas-container {
+    /* Ensures the container takes aspect ratio from the canvas */
+    aspect-ratio: attr(style);
+    max-width: 100%; /* Ensure it doesn't overflow its column */
+    margin: auto; /* Center it */
+    position: relative; /* Needed for absolute positioning of potential overlays */
+    cursor: default; /* Default cursor for the container */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Add a subtle shadow */
+}
+
+#imageCanvas {
+    display: block; /* Remove extra space below canvas */
+    width: 100%; /* Make canvas fill container width */
+    height: 100%; /* Make canvas fill container height */
+    background-color: white; /* Default background */
+    /* cursor: text; */ /* Change cursor dynamically in JS based on hover */
+}
+
+/* Style for the selection box around text */
+.selection-box {
+    position: absolute;
+    border: 1px dashed blue;
+    pointer-events: none; /* Important so it doesn't interfere with clicks */
+}
+
+/* Style for aspect ratio buttons */
+.aspect-ratio-btn.active {
+    background-color: #6366f1; /* indigo-600 */
+    color: white;
+}
+
+/* Style for font options in the dropdown */
+#font-family option.font-noto-sans-sc { font-family: 'Noto Sans SC', sans-serif; }
+#font-family option.font-zcool-xiaowei { font-family: 'ZCOOL XiaoWei', cursive; }
+#font-family option.font-long-cang { font-family: 'Long Cang', cursive; }
+
+/* Ensure text properties section is hidden initially */
+#text-properties.hidden {
+    display: none;
+}

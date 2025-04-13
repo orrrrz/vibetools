@@ -6,6 +6,12 @@
     "description": "图片大小调整、格式转换、旋转等"
   },
   {
+    "module_name": "txt2img",
+    "name": "小红书文字图片生成",
+    "url": "/tools/txt2img",
+    "description": ""
+  },
+  {
     "module_name": "img2pdf",
     "name": "图片打印",
     "url": "/tools/img2pdf",

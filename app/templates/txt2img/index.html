@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('txt2img.static', filename='css/style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=ZCOOL+XiaoWei&family=Long+Cang&display=swap" rel="stylesheet">
+<style>
+    /* Add specific styles for fonts if needed */
+    .font-noto-sans-sc { font-family: 'Noto Sans SC', sans-serif; }
+    .font-zcool-xiaowei { font-family: 'ZCOOL XiaoWei', cursive; }
+    .font-long-cang { font-family: 'Long Cang', cursive; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-md space-y-6 h-fit sticky top-24">
+            <h2 class="text-xl font-semibold border-b pb-2 mb-4">编辑选项</h2>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">画布尺寸 (px)</label>
+                <div class="flex space-x-2">
+                    <input type="number" id="canvas-width" value="750" class="w-1/2 p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="number" id="canvas-height" value="1000" class="w-1/2 p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="flex space-x-2 mt-1">
+                     <button id="aspect-3-4" class="aspect-ratio-btn text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded">3:4</button>
+                     <button id="aspect-1-1" class="aspect-ratio-btn text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded">1:1</button>
+                     <button id="aspect-4-3" class="aspect-ratio-btn text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded">4:3</button>
+                     <button id="aspect-16-9" class="aspect-ratio-btn text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded">16:9</button>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">背景</label>
+                <div class="flex items-center space-x-2">
+                    <span>颜色:</span>
+                    <input type="color" id="bg-color" value="#FFFFFF" class="h-8 w-14 border border-gray-300 rounded cursor-pointer">
+                </div>
+                 <div class="flex items-center space-x-2">
+                    <span>图片:</span>
+                    <input type="file" id="bg-image-upload" accept="image/*" class="text-sm">
+                 </div>
+                 <button id="clear-bg-image" class="text-xs text-red-500 hover:text-red-700 mt-1">清除背景图片</button>
+            </div>
+
+            <div class="space-y-2">
+                <label for="text-input" class="block text-sm font-medium text-gray-700">添加文字</label>
+                <textarea id="text-input" rows="2" placeholder="输入文字内容..." class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <button id="add-text-btn" class="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">添加文字</button>
+            </div>
+
+            <div id="text-properties" class="space-y-4 border-t pt-4 mt-4 hidden">
+                 <h3 class="text-md font-semibold text-gray-800">编辑选中文字</h3>
+                 <div>
+                    <label for="edit-text-content" class="block text-sm font-medium text-gray-700">内容</label>
+                     <textarea id="edit-text-content" rows="2" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1"></textarea>
+                 </div>
+                 <div>
+                    <label for="font-family" class="block text-sm font-medium text-gray-700">字体</label>
+                    <select id="font-family" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1">
+                        <option value="'Inter', sans-serif" style="font-family: 'Inter', sans-serif;">默认 (Inter)</option>
+                        <option value="'Noto Sans SC', sans-serif" class="font-noto-sans-sc">思源黑体 SC</option>
+                        <option value="'ZCOOL XiaoWei', cursive" class="font-zcool-xiaowei">站酷小薇体</option>
+                        <option value="'Long Cang', cursive" class="font-long-cang">龙藏体</option>
+                        <option value="Arial, sans-serif" style="font-family: Arial, sans-serif;">Arial</option>
+                        <option value="'Times New Roman', Times, serif" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
+                        <option value="'Courier New', Courier, monospace" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
+                    </select>
+                 </div>
+                 <div class="flex space-x-4">
+                     <div class="w-1/2">
+                         <label for="font-size" class="block text-sm font-medium text-gray-700">大小 (px)</label>
+                         <input type="number" id="font-size" value="40" min="8" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1">
+                     </div>
+                     <div class="w-1/2">
+                         <label for="font-color" class="block text-sm font-medium text-gray-700">颜色</label>
+                         <input type="color" id="font-color" value="#000000" class="w-full h-10 border border-gray-300 rounded cursor-pointer mt-1">
+                     </div>
+                 </div>
+                 <button id="delete-text-btn" class="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">删除选中文字</button>
+            </div>
+
+            <div class="space-y-2 border-t pt-4 mt-4">
+                <label class="block text-sm font-medium text-gray-700">导出图片</label>
+                <div class="flex flex-col space-y-2">
+                    <button id="export-png-btn" data-format="png" class="export-btn w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">导出 PNG</button>
+                    <button id="export-jpg-btn" data-format="jpeg" class="export-btn w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">导出 JPG</button>
+                    <button id="export-webp-btn" data-format="webp" class="export-btn w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">导出 WebP</button>
+                </div>
+                 <p class="text-xs text-gray-500 mt-1">提示：JPG 格式不支持透明度。</p>
+            </div>
+
+        </div>
+
+        <div class="md:col-span-2 flex flex-col items-center">
+             <h2 class="text-xl font-semibold mb-4 text-center">预览区域</h2>
+             <div id="canvas-container" class="relative w-full max-w-2xl mx-auto border border-gray-400 bg-gray-100 overflow-hidden">
+                 <canvas id="imageCanvas"></canvas>
+             </div>
+             <p class="text-sm text-gray-500 mt-2">点击画布上的文字可选中编辑，拖动可调整位置。</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }} {# Include scripts from base.html if any #}
+<script src="{{ url_for('txt2img.static', filename='js/script.js') }}"></script>
+{% endblock %}
