@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Element References ---
     const canvas = document.getElementById('imageCanvas');
     const ctx = canvas.getContext('2d');
     const canvasContainer = document.getElementById('canvas-container');
-
-    // --- Control Elements ---
     const canvasWidthInput = document.getElementById('canvas-width');
     const canvasHeightInput = document.getElementById('canvas-height');
     const bgColorInput = document.getElementById('bg-color');
     const bgImageUpload = document.getElementById('bg-image-upload');
+    const bgImageFilenameSpan = document.getElementById('bg-image-filename');
     const clearBgImageBtn = document.getElementById('clear-bg-image');
     const textInput = document.getElementById('text-input');
     const addTextBtn = document.getElementById('add-text-btn');
@@ -21,138 +21,152 @@ document.addEventListener('DOMContentLoaded', () => {
     const aspectRatioBtns = document.querySelectorAll('.aspect-ratio-btn');
 
     // --- State Variables ---
-    // Initialize dimensions from inputs
-    let canvasWidth = parseInt(canvasWidthInput.value, 10) || 750; // Default on invalid
+    let canvasWidth = parseInt(canvasWidthInput.value, 10) || 750;
     let canvasHeight = parseInt(canvasHeightInput.value, 10) || 1000;
     let bgColor = bgColorInput.value;
     let bgImage = null; // Store the Image object for background
     let textElements = []; // Array to store text objects { text, x, y, font, size, color, width, height }
     let selectedTextIndex = -1; // Index of the selected text element
-    let isDragging = false;
-    let dragStartX, dragStartY;
-    let textOffsetX, textOffsetY; // Offset from text top-left to mouse click
+    let isDragging = false; // Flag for active dragging state
+    let dragStartX, dragStartY; // Initial position of drag start
+    let textOffsetX, textOffsetY; // Offset from text top-left corner to mouse/touch point
+    // Store event listener references for proper removal during drag
+    let dragMoveListener = null;
+    let dragEndListener = null;
 
-    // --- Initialization ---
+    // --- Initialization & Drawing ---
+
+    /**
+     * Initializes or resizes the canvas element and redraws content.
+     */
     function initializeCanvas() {
-        // Store current state if needed (e.g., selected index)
-        const previouslySelected = selectedTextIndex;
+        console.log("Initializing/Resizing Canvas..."); // Keep this log
+        const previouslySelected = selectedTextIndex; // Preserve selection state
 
-        // Apply dimensions to canvas ELEMENT attributes
+        // Set canvas element dimensions (clears canvas and resets context state)
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
 
-        // Update container style for visual scaling
+        // Update the container's CSS for visual scaling
         updateCanvasContainerStyle();
 
-        // Redraw everything (background, image, text)
-        // Canvas context state (font, fillStyle etc.) is reset when dimensions change,
-        // so redrawCanvas needs to set them all correctly.
+        // Redraw all elements onto the newly sized canvas
         redrawCanvas();
 
-        // Restore selection state if any text was selected
+        // Restore selection if an element was selected before resizing
         if (previouslySelected !== -1 && previouslySelected < textElements.length) {
-            selectText(previouslySelected, false); // Select without showing properties again unnecessarily
+            selectText(previouslySelected, false); // Reselect without showing properties again
         } else {
-             deselectText(false); // Deselect without redraw if nothing was selected
+             deselectText(false); // Ensure no selection state if nothing was selected
         }
-
         console.log(`Canvas initialized/resized to ${canvasWidth}x${canvasHeight}`);
     }
 
+    /**
+     * Updates the canvas container's aspect-ratio style for layout scaling.
+     */
     function updateCanvasContainerStyle() {
-        // Set container aspect ratio for proper scaling in layout
         canvasContainer.style.aspectRatio = `${canvasWidth} / ${canvasHeight}`;
-        console.log(`Container aspect ratio set to: ${canvasWidth} / ${canvasHeight}`);
     }
 
-    // --- Drawing ---
+    /**
+     * Clears and redraws the entire canvas content (background, image, text).
+     */
     function redrawCanvas() {
-        console.log('Redrawing canvas. Text elements:', textElements.length);
-        // Clear canvas
+        // Clear the canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw background color
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw background image if exists and loaded
-        if (bgImage && bgImage.complete && bgImage.naturalWidth !== 0) { // Check if loaded and valid
-             console.log('Drawing bgImage:', bgImage.src);
-            // Default: cover the canvas, maintain aspect ratio, center
+        // Draw background image if it exists and is loaded
+        if (bgImage && bgImage.complete && bgImage.naturalWidth !== 0) {
+            // Calculate drawing dimensions to cover canvas while maintaining aspect ratio
             const canvasAspect = canvas.width / canvas.height;
-            const imgAspect = bgImage.naturalWidth / bgImage.naturalHeight; // Use naturalWidth/Height
+            const imgAspect = bgImage.naturalWidth / bgImage.naturalHeight;
             let drawWidth, drawHeight, drawX, drawY;
 
             if (imgAspect > canvasAspect) { // Image wider than canvas ratio
                 drawHeight = canvas.height;
                 drawWidth = bgImage.naturalWidth * (drawHeight / bgImage.naturalHeight);
-                drawX = (canvas.width - drawWidth) / 2;
+                drawX = (canvas.width - drawWidth) / 2; // Center horizontally
                 drawY = 0;
             } else { // Image taller than or equal to canvas ratio
                 drawWidth = canvas.width;
                 drawHeight = bgImage.naturalHeight * (drawWidth / bgImage.naturalWidth);
                 drawX = 0;
-                drawY = (canvas.height - drawHeight) / 2;
+                drawY = (canvas.height - drawHeight) / 2; // Center vertically
             }
              ctx.drawImage(bgImage, drawX, drawY, drawWidth, drawHeight);
-        } else if (bgImage) {
-            console.log('bgImage exists but not ready or invalid', bgImage.complete, bgImage.naturalWidth);
         }
-
 
         // Draw text elements
         textElements.forEach((textEl, index) => {
-            // IMPORTANT: Reset context properties for each text element
+            // Set context properties for this specific text element
             ctx.font = `${textEl.size}px ${textEl.font}`;
             ctx.fillStyle = textEl.color;
             ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
+            ctx.textBaseline = 'top'; // Use top baseline for consistent positioning
 
-            console.log(`Drawing text: "${textEl.text}" at (${textEl.x}, ${textEl.y}) with font: ${ctx.font} color: ${ctx.fillStyle}`);
-
-            // Measure text for bounding box
+            // Measure text width for bounding box calculation
             const metrics = ctx.measureText(textEl.text);
-            // Note: Actual bounding box calculation is complex. Approximation:
             textEl.width = metrics.width;
-            textEl.height = textEl.size * 1.2; // Approximation factor
+            // Approximate height based on font size (more accurate methods are complex)
+            textEl.height = textEl.size * 1.2;
 
-            // Draw text
+            // Draw the text
             ctx.fillText(textEl.text, textEl.x, textEl.y);
 
-            // Draw selection box if selected
+            // Draw selection rectangle if this element is selected
             if (index === selectedTextIndex) {
-                console.log(`Drawing selection box for index ${index}`);
                 ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(textEl.x - 2, textEl.y - 2, textEl.width + 4, textEl.height + 4); // Padding
+                ctx.strokeRect(textEl.x - 2, textEl.y - 2, textEl.width + 4, textEl.height + 4); // Add padding
             }
         });
-        console.log('Redraw complete.');
     }
 
     // --- Text Manipulation ---
-    function addText() {
-        const text = textInput.value.trim();
-        if (!text) return;
 
+    /**
+     * Adds a new text element to the canvas based on input fields.
+     */
+    function addText() {
+        console.log("Adding Text..."); // Keep this log
+        const text = textInput.value.trim();
+        if (!text) return; // Do nothing if input is empty
+
+        // Temporarily set font to measure width for centering
+        const tempFont = `${parseInt(fontSizeInput.value, 10)}px ${fontFamilySelect.value}`;
+        ctx.font = tempFont;
+        const textWidth = ctx.measureText(text).width;
+
+        // Create new text object
         const newText = {
             text: text,
-            // Place new text somewhat centrally, considering potential size
-            x: Math.max(10, (canvas.width - ctx.measureText(text).width) / 2),
+            // Initial position roughly centered
+            x: Math.max(10, (canvas.width - textWidth) / 2),
             y: Math.max(10, (canvas.height - parseInt(fontSizeInput.value, 10)) / 2),
-            font: fontFamilySelect.value,
-            size: parseInt(fontSizeInput.value, 10),
-            color: fontColorInput.value,
-            width: 0,
-            height: 0
+            font: fontFamilySelect.value, // Use current font selection
+            size: parseInt(fontSizeInput.value, 10), // Use current size
+            color: fontColorInput.value, // Use current color
+            width: 0, // Will be calculated on redraw
+            height: 0 // Will be calculated on redraw
         };
 
+        // Add to array and clear input
         textElements.push(newText);
-        textInput.value = ''; // Clear input
-        selectText(textElements.length - 1); // Select the newly added text and redraw
+        textInput.value = '';
+        // Select the newly added text (this will also trigger redraw)
+        selectText(textElements.length - 1);
     }
 
+    /**
+     * Updates the properties of the currently selected text element based on controls.
+     */
     function updateSelectedTextProperties() {
+        // Ensure a valid text element is selected
         if (selectedTextIndex === -1 || selectedTextIndex >= textElements.length) return;
 
         const selectedText = textElements[selectedTextIndex];
@@ -161,318 +175,457 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedText.size = parseInt(fontSizeInput.value, 10);
         selectedText.color = fontColorInput.value;
 
-        redrawCanvas(); // Redraw to reflect changes
+        // Redraw canvas to reflect changes
+        redrawCanvas();
     }
 
+    /**
+     * Deletes the currently selected text element.
+     */
     function deleteSelectedText() {
-        if (selectedTextIndex !== -1 && selectedTextIndex < textElements.length) {
-            textElements.splice(selectedTextIndex, 1);
+         // Ensure a valid text element is selected
+         if (selectedTextIndex !== -1 && selectedTextIndex < textElements.length) {
+            textElements.splice(selectedTextIndex, 1); // Remove from array
             deselectText(); // Deselect and redraw
         }
-    }
+     }
 
-    // Added 'shouldRedraw' parameter to avoid redundant redraws sometimes
+    /**
+     * Selects a text element by its index, updates controls, and redraws.
+     * @param {number} index - Index of the text element to select.
+     * @param {boolean} [showProperties=true] - Whether to update and show the property controls.
+     * @param {boolean} [shouldRedraw=true] - Whether to redraw the canvas.
+     */
     function selectText(index, showProperties = true, shouldRedraw = true) {
-        if (index >= 0 && index < textElements.length) {
-            selectedTextIndex = index;
+         if (index >= 0 && index < textElements.length) {
+            selectedTextIndex = index; // Update state
             const selectedText = textElements[index];
-            // Update controls
+
+            // Update controls if requested
             if (showProperties) {
                 editTextContentInput.value = selectedText.text;
                 fontFamilySelect.value = selectedText.font;
                 fontSizeInput.value = selectedText.size;
                 fontColorInput.value = selectedText.color;
-                textPropertiesDiv.classList.remove('hidden');
+                textPropertiesDiv.classList.remove('hidden'); // Show controls
             }
         } else {
-            deselectText(false); // Don't redraw if index is invalid
+             console.warn("selectText called with invalid index:", index);
+             deselectText(false); // Deselect state without redrawing
+             return;
         }
+        // Redraw to show selection highlight if requested
         if (shouldRedraw) {
             redrawCanvas();
         }
-    }
+     }
 
+    /**
+     * Deselects any currently selected text element, hides controls, and redraws.
+     * @param {boolean} [shouldRedraw=true] - Whether to redraw the canvas.
+     */
     function deselectText(shouldRedraw = true) {
-        selectedTextIndex = -1;
-        textPropertiesDiv.classList.add('hidden');
+         selectedTextIndex = -1; // Reset state
+        textPropertiesDiv.classList.add('hidden'); // Hide controls
         if (shouldRedraw) {
             redrawCanvas();
         }
-    }
+     }
 
+    // --- Event Handlers (Non-Drag) ---
 
-    // --- Event Handlers ---
-
-    // Canvas Size Change from Input Fields
+    /**
+     * Handles changes from the width/height number input fields.
+     */
     function handleSizeInputChange() {
+        console.log("Handling Size Input Change..."); // Keep this log
         let newWidth = parseInt(canvasWidthInput.value, 10);
         let newHeight = parseInt(canvasHeightInput.value, 10);
 
-        // Basic validation
-        if (isNaN(newWidth) || newWidth <= 0) newWidth = canvasWidth; // Revert if invalid
-        if (isNaN(newHeight) || newHeight <= 0) newHeight = canvasHeight; // Revert if invalid
+        // Basic validation, revert to current value if invalid
+        if (isNaN(newWidth) || newWidth <= 0) newWidth = canvasWidth;
+        if (isNaN(newHeight) || newHeight <= 0) newHeight = canvasHeight;
 
+        // Update state and input field values
         canvasWidth = newWidth;
         canvasHeight = newHeight;
-        canvasWidthInput.value = canvasWidth; // Ensure input reflects actual value
+        canvasWidthInput.value = canvasWidth;
         canvasHeightInput.value = canvasHeight;
 
-        clearActiveAspectRatio(); // Input change overrides aspect ratio selection
-        initializeCanvas(); // Resize and redraw
+        clearActiveAspectRatio(); // Manual input overrides aspect ratio buttons
+        initializeCanvas(); // Trigger canvas resize and redraw
     }
+    // Attach listeners to number inputs
     canvasWidthInput.addEventListener('change', handleSizeInputChange);
     canvasHeightInput.addEventListener('change', handleSizeInputChange);
 
-    // Aspect Ratio Buttons
+    // Attach listeners to aspect ratio buttons
     aspectRatioBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Use current width as the basis for calculation
+            console.log(`Aspect ratio button ${btn.id} clicked`); // Keep this log
             let baseWidth = parseInt(canvasWidthInput.value, 10);
-            if (isNaN(baseWidth) || baseWidth <= 0) baseWidth = 750; // Default if input is invalid
+            if (isNaN(baseWidth) || baseWidth <= 0) baseWidth = 750; // Use default if input is bad
 
-            const ratio = btn.id.split('-').slice(1).join(':').split(':'); // e.g., "aspect-3-4" -> ["3", "4"]
+            // Calculate new height based on selected ratio and current width
+            const ratio = btn.id.split('-').slice(1).join(':').split(':');
             const aspect = parseInt(ratio[0], 10) / parseInt(ratio[1], 10);
-
-            // Keep width constant, adjust height
             canvasWidth = baseWidth;
             canvasHeight = Math.round(baseWidth / aspect);
 
-            // --- FIX 1: Update input fields ---
+            // Update input fields
             canvasWidthInput.value = canvasWidth;
             canvasHeightInput.value = canvasHeight;
 
-            // Highlight active button
+            // Update button styles
             aspectRatioBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Resize canvas element attributes and redraw content
+            // Trigger canvas resize and redraw
             initializeCanvas();
         });
     });
 
+    /**
+     * Removes the 'active' class from all aspect ratio buttons.
+     */
     function clearActiveAspectRatio() {
          aspectRatioBtns.forEach(b => b.classList.remove('active'));
     }
 
-    // Background Color Change
+    // Handle background color changes
     bgColorInput.addEventListener('input', () => {
         bgColor = bgColorInput.value;
-        redrawCanvas(); // Only need redraw, not full initialize
+        redrawCanvas(); // Only need to redraw, not reinitialize
     });
 
-    // Background Image Upload
+    // Handle background image uploads
     bgImageUpload.addEventListener('change', (event) => {
         const file = event.target.files[0];
-        console.log('File selected:', file);
+        console.log('File selected:', file ? file.name : 'None');
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                 console.log('FileReader loaded. Result length:', e.target.result.length);
-                // Create a new Image object *every time* a file is loaded
+                console.log('FileReader loaded.');
+                // Create a new Image object for the background
                 bgImage = new Image();
                 bgImage.onload = () => {
-                    console.log('bgImage successfully loaded:', bgImage.naturalWidth, 'x', bgImage.naturalHeight);
-                    redrawCanvas(); // Redraw canvas now that the image is ready
+                    console.log('Background image loaded successfully.');
+                    bgImageFilenameSpan.textContent = file.name; // Show filename
+                    clearBgImageBtn.disabled = false; // Enable clear button
+                    redrawCanvas(); // Redraw with the new background image
                 };
                 bgImage.onerror = (error) => {
                     console.error("Error loading background image:", error);
-                    alert("无法加载背景图片，请检查文件是否有效。");
-                    bgImage = null; // Reset on error
+                    alert("无法加载背景图片，请检查文件是否有效。(Error loading background image. Please check if the file is valid.)");
+                    bgImage = null; // Reset image object
+                    bgImageFilenameSpan.textContent = '';
+                    clearBgImageBtn.disabled = true;
                     redrawCanvas(); // Redraw without the failed image
                 }
-                bgImage.src = e.target.result; // Set src AFTER defining onload/onerror
-                 console.log('bgImage src set.');
-                 // --- FIX 3: Reset file input value later ---
-                 // Moved reset inside reader.onload to avoid potential issues
-                 bgImageUpload.value = '';
+                // Set the src AFTER defining onload/onerror
+                bgImage.src = e.target.result;
+                // Reset the file input value to allow uploading the same file again
+                bgImageUpload.value = '';
             }
              reader.onerror = (error) => {
                 console.error("FileReader error:", error);
-                alert("读取文件时出错。");
-                bgImageUpload.value = ''; // Reset input on reader error too
+                alert("读取文件时出错。(Error reading file.)");
+                bgImageUpload.value = '';
+                bgImageFilenameSpan.textContent = '';
+                 clearBgImageBtn.disabled = true;
             };
+            // Read the file as a Data URL
             reader.readAsDataURL(file);
         } else {
-             bgImageUpload.value = ''; // Reset if no file selected (e.g., user cancels)
+             // Handle case where user cancels file selection
+             bgImageUpload.value = '';
+             // Don't clear filename if an image might already be loaded
+             // bgImageFilenameSpan.textContent = '';
         }
     });
 
-
-    // Clear Background Image
+    // Handle clearing the background image
     clearBgImageBtn.addEventListener('click', () => {
-        bgImage = null;
-        bgImageUpload.value = ''; // Clear the file input visually
-        redrawCanvas();
-        console.log('Background image cleared.');
+        console.log("Clearing background image..."); // Keep this log
+        bgImage = null; // Remove image object
+        bgImageUpload.value = ''; // Clear file input
+        bgImageFilenameSpan.textContent = ''; // Clear filename display
+        clearBgImageBtn.disabled = true; // Disable button
+        redrawCanvas(); // Redraw without background image
     });
 
-    // Add Text Button
+    // Attach listener to Add Text button
     addTextBtn.addEventListener('click', addText);
 
-    // Text Property Changes (while text is selected)
+    // Attach listeners for text property controls
     editTextContentInput.addEventListener('input', updateSelectedTextProperties);
     fontFamilySelect.addEventListener('change', updateSelectedTextProperties);
     fontSizeInput.addEventListener('change', updateSelectedTextProperties);
     fontColorInput.addEventListener('input', updateSelectedTextProperties);
-
-    // Delete Text Button
     deleteTextBtn.addEventListener('click', deleteSelectedText);
 
-    // --- Canvas Interaction (Click, Drag) ---
-    function getMousePos(canvas, evt) {
+    // --- Canvas Interaction (Unified Mouse & Touch Dragging) ---
+
+    /**
+     * Calculates the event position relative to the canvas, accounting for scaling.
+     * @param {Event} evt - The mouse or touch event.
+     * @returns {{x: number, y: number} | null} - The coordinates relative to the canvas, or null if invalid.
+     */
+    function getEventPos(canvas, evt) {
         const rect = canvas.getBoundingClientRect();
-        // Adjust for canvas scaling if CSS size differs from attribute size
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+
+        // Get coordinates from touch or mouse event
+        if (evt.touches && evt.touches.length > 0) {
+            clientX = evt.touches[0].clientX;
+            clientY = evt.touches[0].clientY;
+        } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+             // Use changedTouches for touchend events
+             clientX = evt.changedTouches[0].clientX;
+             clientY = evt.changedTouches[0].clientY;
+        } else if (evt.clientX !== undefined && evt.clientY !== undefined) {
+            clientX = evt.clientX;
+            clientY = evt.clientY;
+        } else {
+             console.warn("Could not get valid client coordinates from event:", evt);
+             return null; // Return null if coordinates are unavailable
+        }
+
+        // Calculate position relative to the canvas
         return {
-            x: (evt.clientX - rect.left) * scaleX,
-            y: (evt.clientY - rect.top) * scaleY
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
         };
     }
 
+    /**
+     * Checks if a point (x, y) is within the bounding box of a text element.
+     * @param {number} x - The x-coordinate.
+     * @param {number} y - The y-coordinate.
+     * @param {object} textEl - The text element object.
+     * @returns {boolean} - True if the point is inside the text element's box.
+     */
     function isPointInText(x, y, textEl) {
-        // Use calculated width/height for hit detection
+        // Use the calculated width/height for hit detection
         return x >= textEl.x && x <= textEl.x + textEl.width &&
                y >= textEl.y && y <= textEl.y + textEl.height;
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-        const mousePos = getMousePos(canvas, e);
-        isDragging = false; // Reset dragging state
+    /**
+     * Handles the start of a drag operation (mousedown or touchstart on canvas).
+     * @param {Event} event - The mousedown or touchstart event.
+     */
+    function handleDragStart(event) {
+        const startPos = getEventPos(canvas, event);
+        if (!startPos) return; // Exit if we couldn't get coordinates
 
-        // Check if clicking on existing text (iterate backwards to select topmost)
+        isDragging = false; // Reset dragging flag
+
+        // Check if the event occurred on an existing text element (iterate backwards for top-most)
         let clickedTextIndex = -1;
         for (let i = textElements.length - 1; i >= 0; i--) {
-            if (isPointInText(mousePos.x, mousePos.y, textElements[i])) {
+            if (isPointInText(startPos.x, startPos.y, textElements[i])) {
                 clickedTextIndex = i;
                 break;
             }
         }
 
+        // If a text element was clicked/touched
         if (clickedTextIndex !== -1) {
-            // Don't redraw here, selectText will do it
-            selectText(clickedTextIndex, true, false); // Select, show props, but defer redraw
+            console.log("Drag Start on text index:", clickedTextIndex); // Keep this log
+            // Prevent default actions like text selection or page scroll *if* dragging starts on text
+             if (event.cancelable) event.preventDefault();
+
+            // Select the text element (defer redraw)
+            selectText(clickedTextIndex, true, false);
+
+            // Set dragging state and calculate offset
             isDragging = true;
-            dragStartX = mousePos.x;
-            dragStartY = mousePos.y;
-            textOffsetX = mousePos.x - textElements[selectedTextIndex].x;
-            textOffsetY = mousePos.y - textElements[selectedTextIndex].y;
-            canvas.style.cursor = 'move';
-            redrawCanvas(); // Redraw now to show selection immediately
+            dragStartX = startPos.x;
+            dragStartY = startPos.y;
+            // Ensure selectedTextIndex is valid before accessing element
+            if (selectedTextIndex !== -1 && selectedTextIndex < textElements.length) {
+                 textOffsetX = startPos.x - textElements[selectedTextIndex].x;
+                 textOffsetY = startPos.y - textElements[selectedTextIndex].y;
+                 canvas.style.cursor = 'move'; // Set cursor for visual feedback
+
+                 // Attach move/end listeners globally to track movement anywhere
+                 attachDragListeners();
+
+                 // Redraw now to show the selection highlight
+                 redrawCanvas();
+            } else {
+                 // Should not happen if selectText worked, but safety check
+                 console.error("DragStart Error: selectedTextIndex invalid after selection.");
+                 isDragging = false; // Abort drag if state is inconsistent
+            }
         } else {
-            deselectText(); // This redraws
+            // Clicked/touched on the background, deselect any selected text
+            deselectText(); // This will redraw
             canvas.style.cursor = 'default';
         }
-    });
+    }
 
-    canvas.addEventListener('mousemove', (e) => {
-        const mousePos = getMousePos(canvas, e);
+    /**
+     * Handles the drag movement (mousemove or touchmove).
+     * @param {Event} event - The mousemove or touchmove event.
+     */
+    function handleDragMove(event) {
+        // Only proceed if dragging is active and a valid text element is selected
+        if (!isDragging || selectedTextIndex === -1 || selectedTextIndex >= textElements.length) {
+             return;
+         }
 
-        if (isDragging && selectedTextIndex !== -1 && selectedTextIndex < textElements.length) {
-            const selectedText = textElements[selectedTextIndex];
-            selectedText.x = mousePos.x - textOffsetX;
-            selectedText.y = mousePos.y - textOffsetY;
-            redrawCanvas(); // Redraw continuously while dragging
-        } else {
-             // Change cursor if hovering over text, only if not dragging
-            let hoveringText = false;
-            if (!isDragging) {
-                for (let i = textElements.length - 1; i >= 0; i--) {
-                    if (isPointInText(mousePos.x, mousePos.y, textElements[i])) {
-                        hoveringText = true;
-                        break;
-                    }
-                }
-                 canvas.style.cursor = hoveringText ? 'move' : 'default';
-            }
+        // Prevent default scroll/zoom during text drag on touch devices
+        if (event.cancelable) {
+             event.preventDefault();
         }
-    });
 
-    canvas.addEventListener('mouseup', () => {
-        if (isDragging) {
-            isDragging = false;
-            // Update cursor based on final position
-             const mousePos = getMousePos(canvas, event); // Need event here
-             let hoveringText = false;
-             for (let i = textElements.length - 1; i >= 0; i--) {
-                 if (isPointInText(mousePos.x, mousePos.y, textElements[i])) {
-                     hoveringText = true;
-                     break;
-                 }
-             }
-             canvas.style.cursor = hoveringText ? 'move' : 'default';
-        }
-    });
+        // Get current pointer position
+        const movePos = getEventPos(canvas, event);
+         if (!movePos) return; // Exit if coordinates are invalid
 
-    canvas.addEventListener('mouseleave', () => {
-        // Stop dragging if mouse leaves canvas
-        if (isDragging) {
-            isDragging = false;
-             canvas.style.cursor = 'default';
+        // Update the selected text element's position based on drag offset
+        const selectedText = textElements[selectedTextIndex];
+        selectedText.x = movePos.x - textOffsetX;
+        selectedText.y = movePos.y - textOffsetY;
+
+        // Redraw the canvas to show the updated position
+        redrawCanvas();
+    }
+
+    /**
+     * Handles the end of a drag operation (mouseup, touchend, touchcancel).
+     * @param {Event} event - The mouseup, touchend, or touchcancel event.
+     */
+    function handleDragEnd(event) {
+        // Only proceed if dragging was active
+        if (!isDragging) {
+            return;
         }
-    });
+        console.log("Drag End"); // Keep this log
+
+        isDragging = false; // Reset dragging flag FIRST
+        detachDragListeners(); // THEN remove global listeners
+        canvas.style.cursor = 'default'; // Reset cursor
+
+        // Optional: Redraw one last time to ensure clean state, though last move usually suffices
+        redrawCanvas();
+    }
+
+    // Define listener functions references for correct removal
+    const dragMoveHandler = (event) => handleDragMove(event);
+    const dragEndHandler = (event) => handleDragEnd(event);
+
+    /**
+     * Attaches global event listeners to the document for tracking drag movements and end events.
+     */
+    function attachDragListeners() {
+        console.log("Attaching global drag listeners..."); // Keep this log
+        // Ensure no old listeners are lingering (safety check)
+        detachDragListeners();
+
+        // Store references to the handlers being attached
+        dragMoveListener = dragMoveHandler;
+        dragEndListener = dragEndHandler;
+
+        // Attach listeners to the document
+        // Use passive: false for move listeners to allow preventDefault()
+        document.addEventListener('mousemove', dragMoveListener, { passive: false });
+        document.addEventListener('touchmove', dragMoveListener, { passive: false });
+        document.addEventListener('mouseup', dragEndListener);
+        document.addEventListener('touchend', dragEndListener);
+        document.addEventListener('touchcancel', dragEndListener); // Handle interruptions
+    }
+
+    /**
+     * Removes the global event listeners attached during a drag operation.
+     */
+    function detachDragListeners() {
+        // console.log("Detaching global drag listeners..."); // Can be noisy
+        // Remove move listeners if they exist
+        if (dragMoveListener) {
+            document.removeEventListener('mousemove', dragMoveListener);
+            document.removeEventListener('touchmove', dragMoveListener);
+            dragMoveListener = null; // Clear reference
+        }
+        // Remove end listeners if they exist
+         if (dragEndListener) {
+             document.removeEventListener('mouseup', dragEndListener);
+             document.removeEventListener('touchend', dragEndListener);
+             document.removeEventListener('touchcancel', dragEndListener);
+             dragEndListener = null; // Clear reference
+         }
+    }
+
+    // Attach initial drag start listeners to the canvas element
+    canvas.addEventListener('mousedown', handleDragStart);
+    // Use passive: false for touchstart to allow preventDefault() if drag starts on text
+    canvas.addEventListener('touchstart', handleDragStart, { passive: false });
 
 
     // --- Export ---
+
+    // Attach listeners to export buttons
     exportBtns.forEach(button => {
         button.addEventListener('click', () => {
-            console.log(`Exporting as ${button.dataset.format}...`);
-            // Temporarily deselect text for clean export
-            const originallySelected = selectedTextIndex;
+            console.log(`Exporting as ${button.dataset.format}...`); // Keep this log
+            const originallySelected = selectedTextIndex; // Store selection state
+
+            // Temporarily deselect text *state* for a clean export image (without selection box)
             if (selectedTextIndex !== -1) {
-                 // Deselect without redrawing immediately
                  selectedTextIndex = -1;
-                 // Don't hide properties div yet, just remove selection state
             }
 
-            // Ensure canvas is drawn cleanly without selection box
-             redrawCanvas(); // Redraw one last time without any selection box
+            // Redraw canvas one last time without the selection box
+             redrawCanvas();
 
             const format = button.dataset.format; // 'png', 'jpeg', 'webp'
             const mimeType = `image/${format}`;
             const filename = `xiaohongshu-image.${format}`;
-
             let dataURL;
+
             try {
+                 // Handle JPEG transparency: redraw on a temporary canvas with background color
                  if (format === 'jpeg') {
-                    // Create a temporary canvas ONLY if background isn't fully opaque or image exists
-                    // For simplicity, always redraw with bg color for JPG export to ensure no transparency issues
-                    console.log('Creating temporary canvas for JPG export.');
                     const tempCanvas = document.createElement('canvas');
                     tempCanvas.width = canvas.width;
                     tempCanvas.height = canvas.height;
                     const tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.fillStyle = bgColor; // Ensure background color
+                    // Fill with background color first
+                    tempCtx.fillStyle = bgColor;
                     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-                    tempCtx.drawImage(canvas, 0, 0); // Draw the original canvas content on top
-                    dataURL = tempCanvas.toDataURL(mimeType, 0.92); // Quality 0.92 for JPG
+                    // Draw existing canvas content (including potential bg image) on top
+                    tempCtx.drawImage(canvas, 0, 0);
+                    // Export from temporary canvas with quality setting
+                    dataURL = tempCanvas.toDataURL(mimeType, 0.92); // Adjust quality 0.0 to 1.0
                 } else {
+                    // Export directly for formats supporting transparency (PNG, WebP)
                     dataURL = canvas.toDataURL(mimeType);
                 }
-                 console.log(`Data URL created (length: ${dataURL.length})`);
 
-                 // Trigger download
+                 // Trigger download using a temporary link
                  const link = document.createElement('a');
                  link.href = dataURL;
                  link.download = filename;
-                 document.body.appendChild(link); // Required for Firefox
-                 link.click();
-                 document.body.removeChild(link);
+                 document.body.appendChild(link); // Append for Firefox compatibility
+                 link.click(); // Simulate click
+                 document.body.removeChild(link); // Clean up the link
                  console.log('Download triggered.');
 
             } catch (error) {
                  console.error(`Error during ${format} export:`, error);
-                 alert(`导出 ${format.toUpperCase()} 图片时出错: ${error.message}`);
+                 alert(`导出 ${format.toUpperCase()} 图片时出错。(Error exporting ${format.toUpperCase()} image): ${error.message}`);
             }
 
-
-            // Restore selection state AFTER export and download trigger
+            // Restore selection state AFTER export attempt
             if (originallySelected !== -1) {
-                 console.log(`Restoring selection to index ${originallySelected}`);
-                 // Reselect the text element, redraw will happen inside selectText
-                 selectText(originallySelected, true); // Show properties again
+                 // Reselect the text element (this will also redraw with selection box)
+                 selectText(originallySelected, true);
             } else {
-                 // If nothing was selected, ensure the view is correct (e.g. if redraw failed during export try)
+                 // If nothing was selected, ensure canvas is still in correct state
                  redrawCanvas();
             }
         });
@@ -481,4 +634,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Setup ---
     initializeCanvas(); // Initial setup of canvas size and drawing
     console.log('Xiaohongshu Image Tool Initialized.');
-});
+
+}); // End DOMContentLoaded
