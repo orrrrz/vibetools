@@ -9,9 +9,10 @@
     .font-zcool-xiaowei { font-family: 'ZCOOL XiaoWei', cursive; }
     .font-long-cang { font-family: 'Long Cang', cursive; }
 
-    /* Prevent layout shift when text properties appear */
-    /* This helps but aligning items-start in preview column is more direct */
-    /* .controls-column { min-height: 600px; } */ /* Example: Adjust if needed */
+    /* Helper class to hide elements */
+    .control-hidden {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -71,32 +72,84 @@
 
             <div id="text-properties" class="space-y-4 border-t pt-4 mt-4 hidden">
                  <h3 class="text-md font-semibold text-gray-800">编辑选中文字</h3>
-                 <div>
-                    <label for="edit-text-content" class="block text-sm font-medium text-gray-700">内容</label>
-                     <textarea id="edit-text-content" rows="2" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm"></textarea>
-                 </div>
-                 <div>
-                    <label for="font-family" class="block text-sm font-medium text-gray-700">字体</label>
-                    <select id="font-family" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
-                        <option value="'Inter', sans-serif" style="font-family: 'Inter', sans-serif;">默认 (Inter)</option>
-                        <option value="'Noto Sans SC', sans-serif" class="font-noto-sans-sc">思源黑体 SC</option>
-                        <option value="'ZCOOL XiaoWei', cursive" class="font-zcool-xiaowei">站酷小薇体</option>
-                        <option value="'Long Cang', cursive" class="font-long-cang">龙藏体</option>
-                        <option value="Arial, sans-serif" style="font-family: Arial, sans-serif;">Arial</option>
-                        <option value="'Times New Roman', Times, serif" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
-                        <option value="'Courier New', Courier, monospace" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
-                    </select>
-                 </div>
-                 <div class="flex space-x-4">
-                     <div class="w-1/2">
-                         <label for="font-size" class="block text-sm font-medium text-gray-700">大小 (px)</label>
-                         <input type="number" id="font-size" value="40" min="8" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                 <fieldset class="border border-gray-200 p-3 rounded space-y-3">
+                     <legend class="text-sm font-medium px-1 text-gray-600">基本属性</legend>
+                     <div>
+                        <label for="edit-text-content" class="block text-sm font-medium text-gray-700">内容</label>
+                         <textarea id="edit-text-content" rows="2" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm"></textarea>
                      </div>
-                     <div class="w-1/2">
-                         <label for="font-color" class="block text-sm font-medium text-gray-700">颜色</label>
-                         <input type="color" id="font-color" value="#000000" class="w-full h-10 border border-gray-300 rounded cursor-pointer mt-1">
+                     <div>
+                        <label for="font-family" class="block text-sm font-medium text-gray-700">字体</label>
+                        <select id="font-family" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                            <option value="'Inter', sans-serif" style="font-family: 'Inter', sans-serif;">默认 (Inter)</option>
+                             <option value="'Noto Sans SC', sans-serif" class="font-noto-sans-sc">思源黑体 SC</option>
+                             <option value="'ZCOOL XiaoWei', cursive" class="font-zcool-xiaowei">站酷小薇体</option>
+                             <option value="'Long Cang', cursive" class="font-long-cang">龙藏体</option>
+                             <option value="Arial, sans-serif" style="font-family: Arial, sans-serif;">Arial</option>
+                             <option value="'Times New Roman', Times, serif" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
+                             <option value="'Courier New', Courier, monospace" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
+                        </select>
                      </div>
-                 </div>
+                     <div class="flex space-x-4">
+                         <div class="w-1/2">
+                             <label for="font-size" class="block text-sm font-medium text-gray-700">大小 (px)</label>
+                             <input type="number" id="font-size" value="40" min="8" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                         </div>
+                         <div class="w-1/2">
+                             <label for="font-color" class="block text-sm font-medium text-gray-700">颜色</label>
+                             <input type="color" id="font-color" value="#000000" class="w-full h-10 border border-gray-300 rounded cursor-pointer mt-1">
+                         </div>
+                     </div>
+                 </fieldset>
+
+                 <fieldset class="border border-gray-200 p-3 rounded space-y-3">
+                     <legend class="text-sm font-medium px-1 text-gray-600">描边效果</legend>
+                     <div class="flex items-center">
+                         <input id="enable-stroke" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                         <label for="enable-stroke" class="ml-2 block text-sm text-gray-900">启用描边</label>
+                     </div>
+                     <div id="stroke-details" class="space-y-3 control-hidden pl-5">
+                         <div class="flex space-x-4">
+                             <div class="w-1/2">
+                                 <label for="stroke-width" class="block text-sm font-medium text-gray-700">宽度 (px)</label>
+                                 <input type="number" id="stroke-width" value="1" min="0" step="0.5" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                             </div>
+                             <div class="w-1/2">
+                                 <label for="stroke-color" class="block text-sm font-medium text-gray-700">颜色</label>
+                                 <input type="color" id="stroke-color" value="#ffffff" class="w-full h-10 border border-gray-300 rounded cursor-pointer mt-1">
+                             </div>
+                         </div>
+                     </div>
+                 </fieldset>
+
+                 <fieldset class="border border-gray-200 p-3 rounded space-y-3">
+                     <legend class="text-sm font-medium px-1 text-gray-600">阴影效果</legend>
+                     <div class="flex items-center">
+                         <input id="enable-shadow" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                         <label for="enable-shadow" class="ml-2 block text-sm text-gray-900">启用阴影</label>
+                     </div>
+                     <div id="shadow-details" class="space-y-3 control-hidden pl-5">
+                         <div>
+                             <label for="shadow-color" class="block text-sm font-medium text-gray-700">颜色</label>
+                             <input type="color" id="shadow-color" value="#000000" class="w-full h-10 border border-gray-300 rounded cursor-pointer mt-1">
+                         </div>
+                         <div>
+                             <label for="shadow-blur" class="block text-sm font-medium text-gray-700">模糊 (px)</label>
+                             <input type="number" id="shadow-blur" value="0" min="0" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                         </div>
+                         <div class="flex space-x-4">
+                             <div class="w-1/2">
+                                 <label for="shadow-offset-x" class="block text-sm font-medium text-gray-700">水平偏移 (px)</label>
+                                 <input type="number" id="shadow-offset-x" value="0" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                             </div>
+                             <div class="w-1/2">
+                                 <label for="shadow-offset-y" class="block text-sm font-medium text-gray-700">垂直偏移 (px)</label>
+                                 <input type="number" id="shadow-offset-y" value="0" class="w-full p-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 mt-1 text-sm">
+                             </div>
+                         </div>
+                     </div>
+                 </fieldset>
+
                  <button id="delete-text-btn" class="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-sm">删除选中文字</button>
             </div>
 

@@ -42,4 +42,13 @@
 #bg-image-filename {
     display: inline-block;
     max-width: 150px; /* Limit filename width */
+    overflow: hidden;  /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long names */
+    white-space: nowrap; /* Prevent wrapping */
+    vertical-align: middle; /* Align with button/label */
+}
+
+/* Helper class to hide control details (used for stroke/shadow) */
+.control-hidden {
+    display: none;
 }

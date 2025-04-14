@@ -11,12 +11,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearBgImageBtn = document.getElementById('clear-bg-image');
     const textInput = document.getElementById('text-input');
     const addTextBtn = document.getElementById('add-text-btn');
+    // Text Properties Elements
     const textPropertiesDiv = document.getElementById('text-properties');
     const editTextContentInput = document.getElementById('edit-text-content');
     const fontFamilySelect = document.getElementById('font-family');
     const fontSizeInput = document.getElementById('font-size');
     const fontColorInput = document.getElementById('font-color');
     const deleteTextBtn = document.getElementById('delete-text-btn');
+    // Stroke Elements
+    const enableStrokeCheckbox = document.getElementById('enable-stroke');
+    const strokeDetailsDiv = document.getElementById('stroke-details');
+    const strokeWidthInput = document.getElementById('stroke-width');
+    const strokeColorInput = document.getElementById('stroke-color');
+    // Shadow Elements
+    const enableShadowCheckbox = document.getElementById('enable-shadow');
+    const shadowDetailsDiv = document.getElementById('shadow-details');
+    const shadowColorInput = document.getElementById('shadow-color');
+    const shadowBlurInput = document.getElementById('shadow-blur');
+    const shadowOffsetXInput = document.getElementById('shadow-offset-x');
+    const shadowOffsetYInput = document.getElementById('shadow-offset-y');
+    // Export & Aspect Ratio Buttons
     const exportBtns = document.querySelectorAll('.export-btn');
     const aspectRatioBtns = document.querySelectorAll('.aspect-ratio-btn');
 
@@ -25,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let canvasHeight = parseInt(canvasHeightInput.value, 10) || 1000;
     let bgColor = bgColorInput.value;
     let bgImage = null; // Store the Image object for background
-    let textElements = []; // Array to store text objects { text, x, y, font, size, color, width, height }
+    // Updated text element structure
+    let textElements = []; // { text, x, y, font, size, color, width, height, hasStroke, strokeWidth, strokeColor, hasShadow, shadowColor, shadowBlur, shadowOffsetX, shadowOffsetY }
     let selectedTextIndex = -1; // Index of the selected text element
     let isDragging = false; // Flag for active dragging state
     let dragStartX, dragStartY; // Initial position of drag start
@@ -33,6 +48,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store event listener references for proper removal during drag
     let dragMoveListener = null;
     let dragEndListener = null;
+
+    // --- Default Art Text Values ---
+    const defaultArtText = {
+        hasStroke: false,
+        strokeWidth: 1,
+        strokeColor: '#FFFFFF', // Default stroke color (e.g., white)
+        hasShadow: false,
+        shadowColor: '#000000', // Default shadow color (e.g., black)
+        shadowBlur: 0,
+        shadowOffsetX: 2, // Slight default offset if enabled
+        shadowOffsetY: 2,
+    };
 
     // --- Initialization & Drawing ---
 
@@ -70,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Clears and redraws the entire canvas content (background, image, text).
+     * Clears and redraws the entire canvas content (background, image, text with effects).
      */
     function redrawCanvas() {
         // Clear the canvas
@@ -103,25 +130,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Draw text elements
         textElements.forEach((textEl, index) => {
-            // Set context properties for this specific text element
+            // --- Apply Shadow (if enabled) ---
+            // Reset shadow from previous element FIRST
+            ctx.shadowColor = 'transparent'; // Use transparent instead of null
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            if (textEl.hasShadow) {
+                ctx.shadowColor = textEl.shadowColor;
+                ctx.shadowBlur = textEl.shadowBlur;
+                ctx.shadowOffsetX = textEl.shadowOffsetX;
+                ctx.shadowOffsetY = textEl.shadowOffsetY;
+            }
+
+            // --- Set Font and Fill Color ---
             ctx.font = `${textEl.size}px ${textEl.font}`;
             ctx.fillStyle = textEl.color;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top'; // Use top baseline for consistent positioning
 
-            // Measure text width for bounding box calculation
+            // --- Draw Text Fill ---
+            ctx.fillText(textEl.text, textEl.x, textEl.y);
+
+            // --- Draw Text Stroke (if enabled) ---
+            if (textEl.hasStroke && textEl.strokeWidth > 0) {
+                ctx.strokeStyle = textEl.strokeColor;
+                ctx.lineWidth = textEl.strokeWidth;
+                ctx.strokeText(textEl.text, textEl.x, textEl.y);
+            }
+
+             // --- Reset Shadow AFTER drawing fill and stroke ---
+             // Important to avoid shadow affecting selection box or other elements
+             ctx.shadowColor = 'transparent';
+             ctx.shadowBlur = 0;
+             ctx.shadowOffsetX = 0;
+             ctx.shadowOffsetY = 0;
+
+            // --- Calculate Bounding Box (after drawing) ---
+            // Measurement doesn't include stroke/shadow, so do it based on font/text only
+            // Recalculate font in case shadow settings affected it (though unlikely)
+            ctx.font = `${textEl.size}px ${textEl.font}`;
             const metrics = ctx.measureText(textEl.text);
             textEl.width = metrics.width;
             // Approximate height based on font size (more accurate methods are complex)
             textEl.height = textEl.size * 1.2;
 
-            // Draw the text
-            ctx.fillText(textEl.text, textEl.x, textEl.y);
-
-            // Draw selection rectangle if this element is selected
+            // --- Draw Selection Box (if selected) ---
+            // Drawn WITHOUT shadow
             if (index === selectedTextIndex) {
                 ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 1; // Ensure line width is reset for selection box
+                // Consider stroke width/shadow offsets for selection box? Maybe later.
                 ctx.strokeRect(textEl.x - 2, textEl.y - 2, textEl.width + 4, textEl.height + 4); // Add padding
             }
         });
@@ -130,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Text Manipulation ---
 
     /**
-     * Adds a new text element to the canvas based on input fields.
+     * Adds a new text element with default basic and art text properties.
      */
     function addText() {
         console.log("Adding Text..."); // Keep this log
@@ -142,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.font = tempFont;
         const textWidth = ctx.measureText(text).width;
 
-        // Create new text object
+        // Create new text object, merging basic and default art properties
         const newText = {
             text: text,
             // Initial position roughly centered
@@ -152,7 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
             size: parseInt(fontSizeInput.value, 10), // Use current size
             color: fontColorInput.value, // Use current color
             width: 0, // Will be calculated on redraw
-            height: 0 // Will be calculated on redraw
+            height: 0, // Will be calculated on redraw
+            ...defaultArtText // Spread default art text values
         };
 
         // Add to array and clear input
@@ -163,20 +224,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Updates the properties of the currently selected text element based on controls.
+     * Updates the properties of the currently selected text element based on ALL controls (basic + art text).
      */
     function updateSelectedTextProperties() {
         // Ensure a valid text element is selected
         if (selectedTextIndex === -1 || selectedTextIndex >= textElements.length) return;
 
         const selectedText = textElements[selectedTextIndex];
+
+        // Update basic properties
         selectedText.text = editTextContentInput.value;
         selectedText.font = fontFamilySelect.value;
         selectedText.size = parseInt(fontSizeInput.value, 10);
         selectedText.color = fontColorInput.value;
 
-        // Redraw canvas to reflect changes
-        redrawCanvas();
+        // Update stroke properties
+        selectedText.hasStroke = enableStrokeCheckbox.checked;
+        selectedText.strokeWidth = parseFloat(strokeWidthInput.value) || 0;
+        selectedText.strokeColor = strokeColorInput.value;
+
+        // Update shadow properties
+        selectedText.hasShadow = enableShadowCheckbox.checked;
+        selectedText.shadowColor = shadowColorInput.value;
+        selectedText.shadowBlur = parseInt(shadowBlurInput.value, 10) || 0;
+        selectedText.shadowOffsetX = parseInt(shadowOffsetXInput.value, 10) || 0;
+        selectedText.shadowOffsetY = parseInt(shadowOffsetYInput.value, 10) || 0;
+
+        // console.log("Updating properties for index:", selectedTextIndex, selectedText); // Debug
+        redrawCanvas(); // Redraw with updated properties
     }
 
     /**
@@ -191,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
      }
 
     /**
-     * Selects a text element by its index, updates controls, and redraws.
+     * Selects a text element by its index, updates ALL controls (basic + art text), and redraws.
      * @param {number} index - Index of the text element to select.
      * @param {boolean} [showProperties=true] - Whether to update and show the property controls.
      * @param {boolean} [shouldRedraw=true] - Whether to redraw the canvas.
@@ -203,10 +278,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update controls if requested
             if (showProperties) {
+                // Update basic controls
                 editTextContentInput.value = selectedText.text;
                 fontFamilySelect.value = selectedText.font;
                 fontSizeInput.value = selectedText.size;
                 fontColorInput.value = selectedText.color;
+
+                // Update stroke controls
+                enableStrokeCheckbox.checked = selectedText.hasStroke;
+                strokeWidthInput.value = selectedText.strokeWidth;
+                strokeColorInput.value = selectedText.strokeColor;
+                // Toggle stroke details visibility
+                strokeDetailsDiv.classList.toggle('control-hidden', !selectedText.hasStroke);
+
+                // Update shadow controls
+                enableShadowCheckbox.checked = selectedText.hasShadow;
+                shadowColorInput.value = selectedText.shadowColor;
+                shadowBlurInput.value = selectedText.shadowBlur;
+                shadowOffsetXInput.value = selectedText.shadowOffsetX;
+                shadowOffsetYInput.value = selectedText.shadowOffsetY;
+                // Toggle shadow details visibility
+                shadowDetailsDiv.classList.toggle('control-hidden', !selectedText.hasShadow);
+
+                // Show the entire properties section
                 textPropertiesDiv.classList.remove('hidden'); // Show controls
             }
         } else {
@@ -221,12 +315,15 @@ document.addEventListener('DOMContentLoaded', () => {
      }
 
     /**
-     * Deselects any currently selected text element, hides controls, and redraws.
+     * Deselects any currently selected text element, hides property controls, and redraws.
      * @param {boolean} [shouldRedraw=true] - Whether to redraw the canvas.
      */
     function deselectText(shouldRedraw = true) {
          selectedTextIndex = -1; // Reset state
-        textPropertiesDiv.classList.add('hidden'); // Hide controls
+        textPropertiesDiv.classList.add('hidden'); // Hide the whole section
+        // Also hide details sections just in case
+        strokeDetailsDiv.classList.add('control-hidden');
+        shadowDetailsDiv.classList.add('control-hidden');
         if (shouldRedraw) {
             redrawCanvas();
         }
@@ -357,12 +454,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach listener to Add Text button
     addTextBtn.addEventListener('click', addText);
 
-    // Attach listeners for text property controls
+    // --- Setup Listeners for Art Text Controls ---
+
+    // Basic Properties (already set up)
     editTextContentInput.addEventListener('input', updateSelectedTextProperties);
     fontFamilySelect.addEventListener('change', updateSelectedTextProperties);
     fontSizeInput.addEventListener('change', updateSelectedTextProperties);
     fontColorInput.addEventListener('input', updateSelectedTextProperties);
     deleteTextBtn.addEventListener('click', deleteSelectedText);
+
+    // Stroke Controls
+    enableStrokeCheckbox.addEventListener('change', () => {
+        strokeDetailsDiv.classList.toggle('control-hidden', !enableStrokeCheckbox.checked);
+        updateSelectedTextProperties(); // Update state and redraw
+    });
+    strokeWidthInput.addEventListener('input', updateSelectedTextProperties);
+    strokeColorInput.addEventListener('input', updateSelectedTextProperties);
+
+    // Shadow Controls
+    enableShadowCheckbox.addEventListener('change', () => {
+        shadowDetailsDiv.classList.toggle('control-hidden', !enableShadowCheckbox.checked);
+        updateSelectedTextProperties(); // Update state and redraw
+    });
+    shadowColorInput.addEventListener('input', updateSelectedTextProperties);
+    shadowBlurInput.addEventListener('input', updateSelectedTextProperties);
+    shadowOffsetXInput.addEventListener('input', updateSelectedTextProperties);
+    shadowOffsetYInput.addEventListener('input', updateSelectedTextProperties);
+
 
     // --- Canvas Interaction (Unified Mouse & Touch Dragging) ---
 
@@ -633,6 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Setup ---
     initializeCanvas(); // Initial setup of canvas size and drawing
-    console.log('Xiaohongshu Image Tool Initialized.');
+    console.log('Xiaohongshu Image Tool Initialized (with Art Text).');
 
 }); // End DOMContentLoaded
