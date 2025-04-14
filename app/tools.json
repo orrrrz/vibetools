@@ -7,9 +7,9 @@
   },
   {
     "module_name": "txt2img",
-    "name": "小红书文字图片生成",
+    "name": "小红书文字图",
     "url": "/tools/txt2img",
-    "description": ""
+    "description": "创建、编辑纯文字图片，轻松发小红书。"
   },
   {
     "module_name": "img2pdf",
