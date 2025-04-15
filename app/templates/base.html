@@ -119,54 +119,7 @@
             {% endblock %}
         </div>
     </footer>
-
-    <script>
-        // 走马灯广告脚本
-        const marquee = document.getElementById('marquee');
-        let startPos = document.querySelector('.marquee-container').offsetWidth;
-        let animationId;
-        let speed = 1.5;
-
-        // 设置初始位置
-        marquee.style.transform = `translateX(${startPos}px)`;
-
-        function animate() {
-            startPos -= speed;
-            // 当文字完全移出屏幕左侧，重置位置到右侧
-            if (startPos < -marquee.offsetWidth) {
-                startPos = document.querySelector('.marquee-container').offsetWidth;
-            }
-            marquee.style.transform = `translateX(${startPos}px)`;
-            animationId = requestAnimationFrame(animate);
-        }
-
-        // 开始动画
-        animate();
-
-        // 响应窗口大小变化
-        window.addEventListener('resize', function() {
-            const containerWidth = document.querySelector('.marquee-container').offsetWidth;
-            if (startPos < 0 && startPos > -marquee.offsetWidth) {
-                // 保持相对位置
-            } else {
-                startPos = containerWidth;
-            }
-        });
-
-        // 点击切换消息
-        document.querySelector('.marquee-container').addEventListener('click', function() {
-            const messages = [
-                "欢迎光临氛围工具店！",
-                "本店所有工具均非手工打造，欢迎使用！",
-            ];
-            const currentMsg = marquee.textContent;
-            let newMsg;
-            do {
-                newMsg = messages[Math.floor(Math.random() * messages.length)];
-            } while (newMsg === currentMsg);
-            
-            marquee.textContent = newMsg;
-        });
-    </script>
+    {% block footer_scripts %}
+    {% endblock %}
 </body>
 </html>
