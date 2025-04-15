@@ -124,6 +124,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // 应用代码高亮
         document.querySelectorAll('pre code').forEach((block) => {
             hljs.highlightElement(block);
+            
+            // 添加复制按钮
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-button';
+            copyButton.textContent = '复制';
+            copyButton.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(block.textContent);
+                    copyButton.textContent = '已复制';
+                    copyButton.classList.add('copied');
+                    setTimeout(() => {
+                        copyButton.textContent = '复制';
+                        copyButton.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    console.error('复制失败:', err);
+                }
+            });
+            block.parentElement.appendChild(copyButton);
         });
         
         // 渲染块级数学公式
