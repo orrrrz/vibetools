@@ -20,6 +20,7 @@ def index():
     try:
         # 假设你的主页模板是 index.html
         tools = load_tool_list()
+        tools = [tool for tool in tools if tool.get('enabled', True)]
         return render_template('index.html', tools=tools)
     except Exception as e:
          # 添加错误处理或日志记录会很有帮助

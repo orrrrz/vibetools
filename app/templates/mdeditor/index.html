@@ -31,10 +31,10 @@
         
         <!-- 右侧预览 -->
         <div class="md:w-1/2 w-full h-full flex flex-col">
-            <!-- <div class="bg-white p-3 mb-2 rounded-lg shadow">
-                <h3 class="text-md font-medium">预览区</h3>
-            </div> -->
-            <div class="flex-grow bg-white rounded-lg shadow overflow-auto">
+            <div class="flex-grow bg-white rounded-lg shadow overflow-auto relative">
+                <button id="btn-copy" class="absolute top-2 right-2 p-2 text-gray-600 hover:text-gray-800 transition-colors" title="复制HTML内容">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
                 <div id="preview" class="markdown-preview p-4"></div>
             </div>
         </div>
@@ -54,6 +54,7 @@
 </div>
 
 <!-- 添加必要的库 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css">
 <link rel="stylesheet" href="{{ url_for('mdeditor.static', filename='css/style.css') }}">

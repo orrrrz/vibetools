@@ -40,5 +40,12 @@
     "name": "SQL 格式化",
     "url": "/tools/sqlformatter",
     "description": "SQL格式化工具"
+  },
+  {
+    "module_name": "fsbox",
+    "enabled": false,
+    "name": "fsbox",
+    "url": "/tools/fsbox",
+    "description": ""
   }
 ]

@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnNew = document.getElementById('btn-new');
     const btnImport = document.getElementById('btn-import');
     const btnExport = document.getElementById('btn-export');
+    const btnCopy = document.getElementById('btn-copy');
     const importDialog = document.getElementById('import-dialog');
     const fileInput = document.getElementById('file-input');
     const btnImportCancel = document.getElementById('btn-import-cancel');
@@ -36,6 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
     editor.addEventListener('input', function() {
         renderPreview();
         saveDocument();
+        // 重置复制按钮状态
+        if (btnCopy) {
+            btnCopy.title = '复制HTML内容';
+            btnCopy.innerHTML = '<i class="fa-regular fa-copy"></i>';
+        }
     });
     
     docTitle.addEventListener('input', function() {
@@ -48,6 +54,41 @@ document.addEventListener('DOMContentLoaded', function() {
     btnExport.addEventListener('click', exportDocument);
     btnImportCancel.addEventListener('click', hideImportDialog);
     btnImportConfirm.addEventListener('click', importDocument);
+    
+    // 添加复制按钮事件监听
+    btnCopy.addEventListener('click', async function() {
+        try {
+            // 创建一个临时容器来存放内容
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = preview.innerHTML;
+            
+            // 创建一个 ClipboardItem 对象
+            const clipboardItem = new ClipboardItem({
+                'text/plain': new Blob([tempDiv.innerText], { type: 'text/plain' }),
+                'text/html': new Blob([preview.innerHTML], { type: 'text/html' })
+            });
+            
+            // 使用新的 Clipboard API 复制内容
+            await navigator.clipboard.write([clipboardItem]);
+            
+            // 显示临时提示
+            const originalTitle = this.title;
+            const originalIcon = this.innerHTML;
+            this.title = '已复制！';
+            this.innerHTML = '<i class="fa-solid fa-check"></i>';
+            
+            setTimeout(() => {
+                this.title = originalTitle;
+                this.innerHTML = originalIcon;
+            }, 2000);
+        } catch (err) {
+            console.error('复制失败:', err);
+            this.title = '复制失败';
+            setTimeout(() => {
+                this.title = '复制HTML内容';
+            }, 2000);
+        }
+    });
     
     // 函数定义
     function initEditor() {

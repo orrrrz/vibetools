@@ -24,6 +24,10 @@ def _register_tool_blueprints(app: Flask):
         app.logger.info(f"Found {len(tools_list)} tools in {json_path}") # Log number of tools found
 
         for tool_info in tools_list:
+            if not tool_info.get('enabled', True):
+                app.logger.info(f"Skipping tool registration: Tool '{tool_info.get('name')}' is disabled.")
+                continue
+
             module_name = tool_info.get('module_name')
             url_prefix = tool_info.get('url')
             tool_name = tool_info.get('name', module_name) # 用于错误消息
@@ -39,10 +43,10 @@ def _register_tool_blueprints(app: Flask):
 
             try:
                 # 动态导入工具模块
-                app.logger.debug(f"Attempting to import module: {module_import_path}")
+                # app.logger.debug(f"Attempting to import module: {module_import_path}")
                 tool_module = importlib.import_module(module_import_path)
                 # 从模块中获取蓝图实例
-                app.logger.debug(f"Attempting to get attribute '{blueprint_variable_name}' from module {module_import_path}")
+                # app.logger.debug(f"Attempting to get attribute '{blueprint_variable_name}' from module {module_import_path}")
                 blueprint_object = getattr(tool_module, blueprint_variable_name)
                 # 注册蓝图
                 app.register_blueprint(blueprint_object, url_prefix=url_prefix)
